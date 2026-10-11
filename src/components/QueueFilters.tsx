@@ -41,7 +41,7 @@ export function QueueFilters({
         >
           <option value="All">All statuses</option>
           {statuses.map((s) => (
-            <option key={s}>{s}</option>
+            <option key={s} value={s}>{s}</option>
           ))}
         </select>
       </label>
@@ -53,7 +53,7 @@ export function QueueFilters({
         >
           <option value="All">All priorities</option>
           {priorities.map((p) => (
-            <option key={p}>{p}</option>
+            <option key={p} value={p}>{p}</option>
           ))}
         </select>
       </label>
@@ -65,9 +65,9 @@ export function QueueFilters({
         >
           <option value="All">Anyone</option>
           {!assignees.includes(filters.assignee) &&
-            filters.assignee !== "All" && <option>{filters.assignee}</option>}
+            filters.assignee !== "All" && <option value={filters.assignee}>{filters.assignee}</option>}
           {assignees.map((a) => (
-            <option key={a}>{a}</option>
+            <option key={a} value={a}>{a}</option>
           ))}
         </select>
       </label>

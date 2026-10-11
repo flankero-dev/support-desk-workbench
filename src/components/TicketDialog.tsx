@@ -53,7 +53,7 @@ export function TicketDialog({
               onChange={(e) => onUpdate({ status: e.target.value as Status })}
             >
               {statuses.map((s) => (
-                <option key={s}>{s}</option>
+                <option key={s} value={s}>{s}</option>
               ))}
             </select>
           </label>
@@ -66,7 +66,7 @@ export function TicketDialog({
               }
             >
               {priorities.map((p) => (
-                <option key={p}>{p}</option>
+                <option key={p} value={p}>{p}</option>
               ))}
             </select>
           </label>
@@ -77,7 +77,7 @@ export function TicketDialog({
               onChange={(e) => onUpdate({ assignee: e.target.value })}
             >
               {assignees.map((a) => (
-                <option key={a}>{a}</option>
+                <option key={a} value={a}>{a}</option>
               ))}
             </select>
           </label>

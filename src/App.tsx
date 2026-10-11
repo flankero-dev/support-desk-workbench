@@ -249,7 +249,7 @@ export default function App() {
                 onChange={(e) => setBulkStatus(e.target.value as Status)}
               >
                 {statuses.map((s) => (
-                  <option key={s}>{s}</option>
+                  <option key={s} value={s}>{s}</option>
                 ))}
               </select>
               <button
@@ -289,12 +289,9 @@ export default function App() {
             </div>
           )}
           <footer className="pagination">
-            <span>
-              {results.length
-                ? `${(currentPage - 1) * pageSize + 1}–${Math.min(currentPage * pageSize, results.length)}`
-                : "0"}{" "}
-              of {results.length} requests
-            </span>
+            <span>{results.length
+              ? `${(currentPage - 1) * pageSize + 1}–${Math.min(currentPage * pageSize, results.length)} of ${results.length} requests`
+              : "0 of 0 requests"}</span>
             <div>
               <button
                 disabled={currentPage === 1}
@@ -303,7 +300,7 @@ export default function App() {
                 Previous
               </button>
               <span>
-                Page {currentPage} of {totalPages}
+                {`Page ${currentPage} of ${totalPages}`}
               </span>
               <button
                 disabled={currentPage === totalPages}
