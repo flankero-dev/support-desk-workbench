@@ -27,12 +27,14 @@ try {
   assert.equal(await page.locator("tbody tr").count(), 8);
   // Browser translators may change option labels. Labels must never become domain values.
   assert.equal(await page.locator("html").getAttribute("translate"), "no");
-  await page.getByLabel("Priority", { exact: true }).evaluate(select => {
+  // The wrapping label also contains the option text, so an exact label match is incorrect.
+  const priorityFilter = page.getByLabel(/^Priority/);
+  await priorityFilter.evaluate(select => {
     for (const option of select.options) {
       if (option.value === "Urgent") option.textContent = "Срочный";
     }
   });
-  await page.getByLabel("Priority", { exact: true }).selectOption({ label: "Срочный" });
+  await priorityFilter.selectOption({ label: "Срочный" });
   assert.equal(await page.locator("tbody tr").count(), 2);
   assert.match(page.url(), /priority=Urgent/);
   assert.match(await page.locator(".pagination").innerText(), /1–2 of 2 requests/);
