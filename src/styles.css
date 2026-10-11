@@ -759,9 +759,22 @@ dialog::backdrop {
     width: 100%;
     padding: 0 0 9px;
   }
-  .workspace-label,
-  .sidebar-bottom {
+  .workspace-label {
     display: none;
+  }
+  .sidebar-bottom {
+    width: 100%;
+    margin-top: 4px;
+    padding: 4px 0 0;
+    border-top: 1px solid #e2e7e1;
+  }
+  .sidebar-bottom .small-label,
+  .sidebar-bottom p {
+    display: none;
+  }
+  .sidebar-bottom button {
+    min-height: 44px;
+    padding: 8px;
   }
   .nav {
     padding: 7px 8px;
