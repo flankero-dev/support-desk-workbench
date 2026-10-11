@@ -195,6 +195,11 @@ try {
     })
     .click();
   assert.equal(await mobile.getByRole("dialog").isVisible(), true);
+  await mobile.getByRole("button", { name: "Close ticket", exact: true }).click();
+  await mobile.getByRole("button", { name: "Reset sample data", exact: true }).click();
+  await mobile.getByRole("heading", { name: "Reset sample data?", exact: true }).waitFor();
+  await mobile.getByRole("button", { name: "Keep changes", exact: true }).click();
+  assert.equal(await mobile.getByRole("dialog").isVisible(), false);
   const recovery = await browser.newPage();
   await recovery.addInitScript(() =>
     localStorage.setItem("support-desk-workbench:v1", "{broken"),
