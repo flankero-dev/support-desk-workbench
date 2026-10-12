@@ -199,7 +199,10 @@ export default function App() {
           <div>
             <p className="eyebrow">SUPPORT OPERATIONS</p>
             <h1>Request queue</h1>
-            <p>Triage requests, keep context and move work forward.</p>
+            <p>
+              Review sample requests, update their status and add internal
+              notes.
+            </p>
           </div>
           <div className="header-actions">
             {supportsServerSnapshots && (
@@ -216,9 +219,7 @@ export default function App() {
             <button onClick={() => setImporting(true)}>
               Restore workspace
             </button>
-            <button onClick={exportData}>
-              Export workspace <span aria-hidden="true">↗</span>
-            </button>
+            <button onClick={exportData}>Export workspace</button>
           </div>
         </header>
         {supportsServerSnapshots && !serverAvailable && (
@@ -393,6 +394,13 @@ export default function App() {
         </section>
         <p className="workspace-footer">
           Sample workspace · Changes stay in this browser
+          <a
+            href="https://github.com/flankero-dev/support-desk-workbench"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View source on GitHub <span aria-hidden="true">↗</span>
+          </a>
         </p>
       </main>
       {active && (

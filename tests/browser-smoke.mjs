@@ -28,6 +28,28 @@ try {
     1,
   );
   assert.equal(await page.locator("tbody tr").count(), 8);
+  // A first visit must explain preferences without an empty select or dead Remove button.
+  assert.equal(
+    await page.getByText("No saved views yet", { exact: true }).isVisible(),
+    true,
+  );
+  assert.equal(await page.locator("#saved-view").count(), 0);
+  assert.equal(
+    await page.getByRole("button", { name: /^Remove saved view/ }).count(),
+    0,
+  );
+  assert.equal(await page.getByLabel("New view name").isVisible(), true);
+  assert.equal(
+    await page
+      .getByRole("link", { name: "View source on GitHub" })
+      .getAttribute("href"),
+    "https://github.com/flankero-dev/support-desk-workbench",
+  );
+  const favicon = await page.locator('link[rel="icon"]').getAttribute("href");
+  assert.equal(
+    (await page.request.get(new URL(favicon, page.url()).href)).status(),
+    200,
+  );
   // Page selection persists across pagination; deselecting a page leaves other pages alone.
   await page.getByLabel("Select SD-1042", { exact: true }).check();
   await page.getByRole("button", { name: "Next", exact: true }).click();
@@ -127,6 +149,11 @@ try {
     await page.getByLabel("Saved view", { exact: true }).inputValue(),
     "Maya requests",
   );
+  assert.equal(await page.locator(".view-feedback").isVisible(), true);
+  assert.equal(
+    await page.locator(".view-feedback").innerText(),
+    "Saved Maya requests.",
+  );
   await page.reload();
   assert.equal(
     await page.getByRole("textbox", { name: "Search requests" }).inputValue(),
@@ -137,9 +164,17 @@ try {
     await page.getByLabel("Saved view", { exact: true }).inputValue(),
     "",
   );
+  assert.match(
+    await page.locator(".view-feedback").innerText(),
+    /Filters changed/,
+  );
   await page
     .getByLabel("Saved view", { exact: true })
     .selectOption("Maya requests");
+  assert.equal(
+    await page.locator(".view-feedback").innerText(),
+    "Applied Maya requests.",
+  );
   assert.equal(await page.locator("tbody tr").count(), 1);
   assert.equal(await page.getByLabel("Search requests").inputValue(), "MAYA");
   await page.getByLabel("New view name").fill("Same filters");
@@ -154,9 +189,18 @@ try {
       exact: true,
     })
     .click();
-  assert.equal(await page.locator("#saved-view option").count(), 1);
+  assert.equal(await page.locator("#saved-view").count(), 0);
+  assert.equal(
+    await page.locator(".view-feedback").innerText(),
+    "Removed Maya requests.",
+  );
+  assert.equal(
+    await page.getByText("No saved views yet", { exact: true }).isVisible(),
+    true,
+  );
+  await page.waitForFunction(() => document.activeElement?.id === "view-name");
   await page.reload();
-  assert.equal(await page.locator("#saved-view option").count(), 1);
+  assert.equal(await page.locator("#saved-view").count(), 0);
   await page
     .getByRole("button", {
       name: "Checkout returns to cart after address edit",
@@ -479,7 +523,7 @@ try {
     await blockedViews.locator(".view-error").innerText(),
     /storage blocked/,
   );
-  assert.equal(await blockedViews.locator("#saved-view option").count(), 1);
+  assert.equal(await blockedViews.locator("#saved-view").count(), 0);
   const apiPage = await browser.newPage();
   apiPage.on("pageerror", (error) => errors.push(error.message));
   await apiPage.goto(url);
