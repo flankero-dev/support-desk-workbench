@@ -166,7 +166,7 @@ export default function App() {
             Workspace <span className="slash">/</span> Requests
           </span>
           <span className="local-label">
-     <span aria-hidden="true" />
+            <span aria-hidden="true" />
             Local workspace
           </span>
         </div>
