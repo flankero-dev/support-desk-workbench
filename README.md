@@ -20,16 +20,18 @@ On a narrow screen the table scrolls within the queue; controls and dialogs stay
 
 ## Code worth reviewing
 
-| Decision | Implementation | Evidence |
-|---|---|---|
-| Keep filtering and updates independent of React | [Ticket domain](src/domain/tickets.ts) | [Composed filters, URL round trips, immutable updates and import validation](tests/tickets.test.mjs) |
-| Preserve the complete view in a bookmark | [Queue state](src/App.tsx), [saved views](src/domain/views.ts) | [Duplicate views and validation](tests/views.test.mjs) |
-| Protect stored edits when another tab writes | [Workspace persistence](src/useWorkspace.ts) | [Two-tab conflict and blocked-storage scenarios](tests/browser-smoke.mjs) |
-| Validate a replacement before applying it | [Import dialog](src/components/ImportDialog.tsx) | Invalid JSON leaves the current workspace intact |
-| Provide a real optional HTTP/SQL boundary | [Loopback server](server/app.ts) | [Restart persistence and concurrent revision updates](tests/server-api.test.mjs) |
-| Preserve keyboard navigation after editing | [Ticket dialog](src/components/TicketDialog.tsx), [queue state](src/App.tsx) | Escape, focus restoration and filtered-out requests in browser smoke |
+| Decision                                        | Implementation                                                               | Evidence                                                                                             |
+| ----------------------------------------------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Keep filtering and updates independent of React | [Ticket domain](src/domain/tickets.ts)                                       | [Composed filters, URL round trips, immutable updates and import validation](tests/tickets.test.mjs) |
+| Preserve the complete view in a bookmark        | [Queue state](src/App.tsx), [saved views](src/domain/views.ts)               | [Duplicate views and validation](tests/views.test.mjs)                                               |
+| Protect stored edits when another tab writes    | [Workspace persistence](src/useWorkspace.ts)                                 | [Two-tab conflict and blocked-storage scenarios](tests/browser-smoke.mjs)                            |
+| Validate a replacement before applying it       | [Import dialog](src/components/ImportDialog.tsx)                             | Invalid JSON leaves the current workspace intact                                                     |
+| Provide a real optional HTTP/SQL boundary       | [Loopback server](server/app.ts)                                             | [Restart persistence and concurrent revision updates](tests/server-api.test.mjs)                     |
+| Preserve keyboard navigation after editing      | [Ticket dialog](src/components/TicketDialog.tsx), [queue state](src/App.tsx) | Escape, focus restoration and filtered-out requests in browser smoke                                 |
 
 The regression suite includes long imported names, an assignee literally named `All`, histories exceeding 500 entries and a save that crosses the JSON size limit. These are examples of data-contract and interaction failures found during browser review.
+
+Unreadable saved views can be discarded through a confirmed reset. This leaves requests and current filters intact. If another tab changed the saved copy, reset preserves it.
 
 ## Run locally
 
@@ -65,7 +67,7 @@ Tests use Node's built-in runner. Browser checks use the production build and co
 ## Boundaries
 
 - The public demo stores requests in this browser and profile. Export before clearing site data or switching browsers.
-- Imports replace the queue after validation. Limits: 500 requests and 2 million JSON characters. Up to eight saved views are separate browser preferences.
+- Imports replace the queue after validation. Limits: 500 requests and 2 million UTF-8 bytes. Up to eight saved views are separate browser preferences.
 - Storage conflicts pause saving in the stale tab. Export its unsaved edits if needed, then reload the saved workspace; changes are not merged automatically.
 - The SQLite server binds to loopback and has one workspace. It is a local reference implementation, without user accounts or multi-tenant authorization.
 - Activity is editable local history. This project does not claim a production support integration or a certified accessibility audit.

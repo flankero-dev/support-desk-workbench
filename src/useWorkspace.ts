@@ -2,16 +2,25 @@ import { useEffect, useRef, useState } from "react";
 import { createSeed } from "./domain/seed.ts";
 import { exportTickets, parseImport } from "./domain/tickets.ts";
 const storageKey = "support-desk-workbench:v1";
-const conflictMessage = "Another tab changed this workspace. Saving here is paused to protect those changes. Export this tab if needed, then reload to use the saved workspace.";
+const conflictMessage =
+  "Another tab changed this workspace. Saving here is paused to protect those changes. Export this tab if needed, then reload to use the saved workspace.";
 function load() {
   let saved: string | null = null;
   try {
     saved = localStorage.getItem(storageKey);
-    return { tickets: saved ? parseImport(saved) : createSeed(), warning: "", saved };
+    return {
+      tickets: saved ? parseImport(saved) : createSeed(),
+      warning: "",
+      saved,
+    };
   } catch {
-    return { tickets: createSeed(), saved, warning: saved
-      ? "Saved workspace could not be loaded. Showing sample data. Editing or importing will replace the unreadable saved copy."
-      : "Browser storage could not be read. Showing sample data; changes may only work in this tab." };
+    return {
+      tickets: createSeed(),
+      saved,
+      warning: saved
+        ? "Saved workspace could not be loaded. Showing sample data. Editing or importing will replace the unreadable saved copy."
+        : "Browser storage could not be read. Showing sample data; changes may only work in this tab.",
+    };
   }
 }
 export function useWorkspace() {
@@ -23,7 +32,11 @@ export function useWorkspace() {
   const blocked = useRef(false);
   useEffect(() => {
     const onStorage = (event: StorageEvent) => {
-      if ((event.key === storageKey || event.key === null) && event.storageArea === localStorage && event.newValue !== lastSaved.current) {
+      if (
+        (event.key === storageKey || event.key === null) &&
+        event.storageArea === localStorage &&
+        event.newValue !== lastSaved.current
+      ) {
         blocked.current = true;
         setStorageConflict(true);
         setStorageWarning(conflictMessage);
@@ -38,7 +51,10 @@ export function useWorkspace() {
       // Recheck immediately before writing, even if the storage event has not arrived.
       if (localStorage.getItem(storageKey) !== lastSaved.current) {
         blocked.current = true;
-        queueMicrotask(() => { setStorageConflict(true); setStorageWarning(conflictMessage); });
+        queueMicrotask(() => {
+          setStorageConflict(true);
+          setStorageWarning(conflictMessage);
+        });
         return;
       }
       const saved = exportTickets(tickets);
@@ -48,9 +64,10 @@ export function useWorkspace() {
       lastSaved.current = saved;
       queueMicrotask(() => setStorageWarning(""));
     } catch (error) {
-      const warning = error instanceof Error && error.message.startsWith("Import is limited")
-        ? "The workspace exceeds the 2 MB save limit. The previous saved copy is unchanged. Changes work in this tab only; export a backup before closing."
-        : "Browser storage is unavailable or full. Changes work in this tab only; export a backup.";
+      const warning =
+        error instanceof Error && error.message.startsWith("Import is limited")
+          ? "The workspace exceeds the 2 MB save limit. The previous saved copy is unchanged. Changes work in this tab only; export a backup before closing."
+          : "Browser storage is unavailable or full. Changes work in this tab only; export a backup.";
       queueMicrotask(() => setStorageWarning(warning));
     }
   }, [tickets, initial.tickets]);

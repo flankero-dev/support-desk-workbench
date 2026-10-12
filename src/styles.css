@@ -876,21 +876,63 @@ dialog::backdrop {
   font-size: 12px;
   color: #586553;
 }
-.saved-views-controls select { max-width: 240px; }
+.saved-views-controls select {
+  max-width: 240px;
+}
 .saved-views-controls form {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin-left: auto;
 }
-.saved-views-controls input { width: 195px; }
-.view-error { margin: 8px 0 0; font-size: 12px; color: #9a3528; }
+.saved-views-controls input {
+  width: 195px;
+}
+.view-error {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: #9a3528;
+}
 @media (max-width: 650px) {
-  .saved-views { padding: 0 14px 14px; }
-  .saved-views-controls form { margin-left: 0; width: 100%; }
-  .saved-views-controls input { flex: 1; width: 100px; min-width: 0; }
-  .saved-views-controls select { flex: 1; min-width: 0; }
+  .saved-views {
+    padding: 0 14px 14px;
+  }
+  .saved-views-controls form {
+    margin-left: 0;
+    width: 100%;
+  }
+  .saved-views-controls input {
+    flex: 1;
+    width: 100px;
+    min-width: 0;
+  }
+  .saved-views-controls select {
+    flex: 1;
+    min-width: 0;
+  }
 }
 
-.table-scroll:focus-visible { outline: 3px solid #276752; outline-offset: -3px; }
-.selection-hint { padding: 10px 20px; font-size: 12px; color: #586553; border-bottom: 1px solid #e7ece5; }
+.table-scroll:focus-visible {
+  outline: 3px solid #276752;
+  outline-offset: -3px;
+}
+.selection-hint {
+  padding: 10px 20px;
+  font-size: 12px;
+  color: #586553;
+  border-bottom: 1px solid #e7ece5;
+}
+
+.reset-views-dialog {
+  padding: 24px;
+  max-width: 460px;
+}
+.reset-views-dialog h2 {
+  margin: 0 0 12px;
+}
+.reset-views-dialog p {
+  line-height: 1.6;
+}
+.reset-views-dialog button {
+  margin: 8px 8px 0 0;
+}

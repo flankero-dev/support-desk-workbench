@@ -22,7 +22,8 @@ import "./styles.css";
 
 const pageSize = 8;
 export default function App() {
-  const { tickets, setTickets, storageWarning, storageConflict } = useWorkspace();
+  const { tickets, setTickets, storageWarning, storageConflict } =
+    useWorkspace();
   const [filters, setFilters] = useState(() =>
     readFilters(window.location.search),
   );
@@ -88,7 +89,8 @@ export default function App() {
   function changeFilters(next: Partial<Filters>) {
     setFilters((f) => {
       const updated = { ...f, ...next };
-      if ("assignee" in next && !next.assigneeIsExact) delete updated.assigneeIsExact;
+      if ("assignee" in next && !next.assigneeIsExact)
+        delete updated.assigneeIsExact;
       return updated;
     });
     setPage(1);
@@ -189,7 +191,11 @@ export default function App() {
         {storageWarning && (
           <p role="alert" className="warning">
             {storageWarning}
-            {storageConflict && <button onClick={() => window.location.reload()}>Reload saved workspace</button>}
+            {storageConflict && (
+              <button onClick={() => window.location.reload()}>
+                Reload saved workspace
+              </button>
+            )}
           </p>
         )}
         <section className="metrics" aria-label="Queue overview">
@@ -253,7 +259,9 @@ export default function App() {
                 onChange={(e) => setBulkStatus(e.target.value as Status)}
               >
                 {statuses.map((s) => (
-                  <option key={s} value={s}>{s}</option>
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
                 ))}
               </select>
               <button
@@ -276,7 +284,10 @@ export default function App() {
               <button onClick={() => setSelected([])}>Cancel selection</button>
             </div>
           )}
-          <p className="selection-hint">Select all applies to this page. Selected requests stay selected when you change pages.</p>
+          <p className="selection-hint">
+            Select all applies to this page. Selected requests stay selected
+            when you change pages.
+          </p>
           <RequestTable
             visible={visible}
             selected={selected}
@@ -294,9 +305,11 @@ export default function App() {
             </div>
           )}
           <footer className="pagination">
-            <span>{results.length
-              ? `${(currentPage - 1) * pageSize + 1}–${Math.min(currentPage * pageSize, results.length)} of ${results.length} requests`
-              : "0 of 0 requests"}</span>
+            <span>
+              {results.length
+                ? `${(currentPage - 1) * pageSize + 1}–${Math.min(currentPage * pageSize, results.length)} of ${results.length} requests`
+                : "0 of 0 requests"}
+            </span>
             <div>
               <button
                 disabled={currentPage === 1}
@@ -304,9 +317,7 @@ export default function App() {
               >
                 Previous
               </button>
-              <span>
-                {`Page ${currentPage} of ${totalPages}`}
-              </span>
+              <span>{`Page ${currentPage} of ${totalPages}`}</span>
               <button
                 disabled={currentPage === totalPages}
                 onClick={() => setPage(currentPage + 1)}
@@ -346,7 +357,19 @@ export default function App() {
           }
         />
       )}
-      {serverSnapshotOpen && <ServerSnapshotDialog tickets={tickets} onClose={() => setServerSnapshotOpen(false)} onLoad={(next) => { setTickets(next); setSelected([]); setPage(1); setActiveId(null); setMessage("Loaded server snapshot into this browser."); }} />}
+      {serverSnapshotOpen && (
+        <ServerSnapshotDialog
+          tickets={tickets}
+          onClose={() => setServerSnapshotOpen(false)}
+          onLoad={(next) => {
+            setTickets(next);
+            setSelected([]);
+            setPage(1);
+            setActiveId(null);
+            setMessage("Loaded server snapshot into this browser.");
+          }}
+        />
+      )}
       {importing && (
         <ImportDialog
           onClose={() => setImporting(false)}

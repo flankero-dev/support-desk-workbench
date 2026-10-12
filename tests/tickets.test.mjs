@@ -145,7 +145,10 @@ test("maximum imported assignee length survives URL filters", () => {
   const imported = parseImport(exportTickets([{ ...tickets[0], assignee }]));
   const filters = { ...defaultFilters, assignee };
   assert.deepEqual(readFilters(writeFilters(filters)), filters);
-  assert.equal(filterTickets(imported, readFilters(writeFilters(filters))).length, 1);
+  assert.equal(
+    filterTickets(imported, readFilters(writeFilters(filters))).length,
+    1,
+  );
 });
 
 test("an imported assignee named All remains distinct from Anyone", () => {
@@ -157,7 +160,10 @@ test("an imported assignee named All remains distinct from Anyone", () => {
 });
 
 test("imported history can grow beyond 500 entries and still reload", () => {
-  const activity = Array.from({ length: 500 }, () => ({ at, text: "Imported history" }));
+  const activity = Array.from({ length: 500 }, () => ({
+    at,
+    text: "Imported history",
+  }));
   const imported = parseImport(exportTickets([{ ...tickets[0], activity }]));
   const updated = addNote(imported, tickets[0].id, "Next note", at);
   const reloaded = parseImport(exportTickets(updated));
@@ -168,11 +174,17 @@ test("imported history can grow beyond 500 entries and still reload", () => {
 test("the import limit counts UTF-8 bytes, including Cyrillic text", () => {
   const base = createSeed()[0];
   const records = Array.from({ length: 300 }, (_, index) => ({
-    ...base, id: `UTF-${index}`, description: "Ж".repeat(3500), activity: [],
+    ...base,
+    id: `UTF-${index}`,
+    description: "Ж".repeat(3500),
+    activity: [],
   }));
   const input = exportTickets(records);
   assert.ok(input.length < 2_000_000);
   assert.ok(Buffer.byteLength(input, "utf8") > 2_000_000);
   assert.throws(() => parseImport(input), /2 MB/);
-  assert.equal(parseImport(exportTickets([records[0]]))[0].description, records[0].description);
+  assert.equal(
+    parseImport(exportTickets([records[0]]))[0].description,
+    records[0].description,
+  );
 });
