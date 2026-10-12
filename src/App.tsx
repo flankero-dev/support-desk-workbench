@@ -288,8 +288,10 @@ export default function App() {
                     );
                     setMessage(
                       changed
-                        ? `Updated ${changed} of ${selected.length} selected requests to ${bulkStatus}.`
-                        : `No changes: all ${selected.length} selected requests are already ${bulkStatus}.`,
+                        ? `Updated ${changed} of ${selected.length} selected ${selected.length === 1 ? "request" : "requests"} to ${bulkStatus}.`
+                        : selected.length === 1
+                          ? `No changes: the selected request is already ${bulkStatus}.`
+                          : `No changes: all ${selected.length} selected requests are already ${bulkStatus}.`,
                     );
                     setSelected([]);
                   } catch (error) {
