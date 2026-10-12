@@ -316,8 +316,8 @@ export default function App() {
           </footer>
         </section>
         <p className="workspace-footer">
-          Independent frontend project · Sample data · No external support
-          service connected
+          Sample workspace · Changes stay in this browser ·{" "}
+          <a href="https://github.com/flankero-dev/support-desk-workbench">Source code</a>
         </p>
         <div role="status" className="announcement">
           {message}

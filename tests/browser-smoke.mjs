@@ -310,6 +310,7 @@ try {
   await hosted.goto("https://demo.example.test/");
   assert.equal(await hosted.getByRole("heading", { name: "Request queue" }).count(), 1);
   assert.equal(await hosted.getByRole("button", { name: "Server snapshot", exact: true }).count(), 0);
+  await hosted.screenshot({ path: "docs/workspace.png", fullPage: true });
   await hosted.getByRole("button", { name: "Import JSON", exact: true }).click();
   assert.equal(await hosted.getByRole("dialog").count(), 1);
   await hosted.getByRole("button", { name: "Cancel", exact: true }).click();
