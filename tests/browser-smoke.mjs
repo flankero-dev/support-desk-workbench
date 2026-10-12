@@ -111,6 +111,14 @@ try {
     .then((value) => assert.equal(value, true));
   await page.getByRole("textbox", { name: "Search requests" }).fill("MAYA");
   assert.equal(await page.locator("tbody tr").count(), 1);
+  assert.match(
+    await page.locator(".pagination").innerText(),
+    /1–1 of 1 request\b/,
+  );
+  assert.doesNotMatch(
+    await page.locator(".pagination").innerText(),
+    /1 requests/,
+  );
   assert.match(page.url(), /q=MAYA/);
   await page.getByLabel("New view name").fill("Maya requests");
   await page.getByRole("button", { name: "Save view", exact: true }).click();
