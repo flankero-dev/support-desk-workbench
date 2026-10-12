@@ -244,9 +244,11 @@ export function SavedViews({
         </button>
       </dialog>
       <p className="view-feedback" role="status">
-        {filtersChanged
-          ? "Filters changed. Choose a saved view to restore it."
-          : message}
+        {active && active.name !== lastUsedName
+          ? `Current filters match ${active.name}.`
+          : filtersChanged
+            ? "Filters changed. Choose a saved view to restore it."
+            : message}
       </p>
     </div>
   );

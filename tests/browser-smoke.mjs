@@ -177,6 +177,32 @@ try {
   );
   assert.equal(await page.locator("tbody tr").count(), 1);
   assert.equal(await page.getByLabel("Search requests").inputValue(), "MAYA");
+  // Manual filters can match a different view; feedback must describe that match.
+  await page.getByRole("button", { name: "Clear", exact: true }).click();
+  await page.getByLabel("New view name").fill("All requests");
+  await page.getByRole("button", { name: "Save view", exact: true }).click();
+  await page
+    .getByLabel("Saved view", { exact: true })
+    .selectOption("All requests");
+  await page.getByLabel("Search requests").fill("MAYA");
+  assert.equal(
+    await page.getByLabel("Saved view", { exact: true }).inputValue(),
+    "Maya requests",
+  );
+  assert.equal(
+    await page.locator(".view-feedback").innerText(),
+    "Current filters match Maya requests.",
+  );
+  assert.equal(await page.locator("tbody tr").count(), 1);
+  assert.match(page.url(), /q=MAYA/);
+  await page.getByRole("button", { name: "Clear", exact: true }).click();
+  await page
+    .getByRole("button", {
+      name: "Remove saved view All requests",
+      exact: true,
+    })
+    .click();
+  await page.getByLabel("Search requests").fill("MAYA");
   await page.getByLabel("New view name").fill("Same filters");
   await page.getByRole("button", { name: "Save view", exact: true }).click();
   assert.match(await page.getByRole("alert").innerText(), /already saved/);
