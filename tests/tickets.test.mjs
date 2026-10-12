@@ -164,3 +164,15 @@ test("imported history can grow beyond 500 entries and still reload", () => {
   assert.equal(reloaded[0].activity.length, 501);
   assert.equal(reloaded[0].activity.at(-1).text, "Note: Next note");
 });
+
+test("the import limit counts UTF-8 bytes, including Cyrillic text", () => {
+  const base = createSeed()[0];
+  const records = Array.from({ length: 300 }, (_, index) => ({
+    ...base, id: `UTF-${index}`, description: "Ж".repeat(3500), activity: [],
+  }));
+  const input = exportTickets(records);
+  assert.ok(input.length < 2_000_000);
+  assert.ok(Buffer.byteLength(input, "utf8") > 2_000_000);
+  assert.throws(() => parseImport(input), /2 MB/);
+  assert.equal(parseImport(exportTickets([records[0]]))[0].description, records[0].description);
+});

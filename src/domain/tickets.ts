@@ -125,7 +125,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 export function parseImport(input: string): Ticket[] {
-  if (input.length > 2_000_000)
+  if (input.length > 2_000_000 || new TextEncoder().encode(input).byteLength > 2_000_000)
     throw new Error("Import is limited to 2 MB of JSON.");
   let value: unknown;
   try {

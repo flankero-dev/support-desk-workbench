@@ -9,7 +9,9 @@ function load() {
     saved = localStorage.getItem(storageKey);
     return { tickets: saved ? parseImport(saved) : createSeed(), warning: "", saved };
   } catch {
-    return { tickets: createSeed(), saved, warning: "Saved workspace could not be loaded. Showing sample data; export a backup before closing." };
+    return { tickets: createSeed(), saved, warning: saved
+      ? "Saved workspace could not be loaded. Showing sample data. Editing or importing will replace the unreadable saved copy."
+      : "Browser storage could not be read. Showing sample data; changes may only work in this tab." };
   }
 }
 export function useWorkspace() {

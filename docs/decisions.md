@@ -61,3 +61,5 @@ These cases are covered in the domain and browser suites. Coverage is scoped to 
 Status, priority, assignee and sidebar labels use darker colours against their actual backgrounds. Browser checks calculate text contrast for these compact labels. The table is a named, focusable scroll region so keyboard users can reach columns on small screens.
 
 Select all applies to the visible page. Selection is retained when changing pages, while changing filters clears it. A visible hint states the pagination rule and a browser regression checks selecting and deselecting separate pages.
+
+The 2 MB JSON limit is measured in UTF-8 bytes, matching the HTTP boundary. A regression uses a Cyrillic document that fits the former string-length limit but exceeds the byte limit. Small Unicode documents still round-trip normally. An unreadable-storage warning now explains that the displayed data is the sample and that editing or importing replaces the unreadable saved copy; exporting the sample is not presented as recovery of that copy.
