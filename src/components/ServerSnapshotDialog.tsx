@@ -97,12 +97,8 @@ export function ServerSnapshotDialog({
       </header>
       <div className="dialog-body">
         <p>
-          Optional local server backup. Refresh to compare a saved revision,
-          then save this browser copy or replace it with the server copy.
-        </p>
-        <p>
-          The hosted GitHub Pages demo has browser storage only. Server
-          snapshots require the included Node.js server.
+          Compare a saved revision before saving or replacing either copy.
+          Browser changes are not synced automatically.
         </p>
         <p>
           Browser copy: {tickets.length} requests.{" "}

@@ -39,6 +39,31 @@ export default function App() {
   const supportsServerSnapshots =
     window.location.hostname === "localhost" ||
     window.location.hostname === "127.0.0.1";
+  const [serverAvailable, setServerAvailable] = useState(false);
+  useEffect(() => {
+    if (!supportsServerSnapshots) return;
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), 3000);
+    fetch("/api/workspace", { signal: controller.signal })
+      .then((response) => {
+        if (controller.signal.aborted) return;
+        setServerAvailable(
+          response.ok &&
+            Boolean(
+              response.headers
+                .get("Content-Type")
+                ?.startsWith("application/json"),
+            ) &&
+            /^"[1-9]\d*"$/.test(response.headers.get("ETag") ?? ""),
+        );
+      })
+      .catch(() => {})
+      .finally(() => window.clearTimeout(timer));
+    return () => {
+      controller.abort();
+      window.clearTimeout(timer);
+    };
+  }, [supportsServerSnapshots]);
   const openButtons = useRef(new Map<string, HTMLButtonElement>());
   const results = useMemo(
     () => filterTickets(tickets, filters),
@@ -178,7 +203,13 @@ export default function App() {
           </div>
           <div className="header-actions">
             {supportsServerSnapshots && (
-              <button onClick={() => setServerSnapshotOpen(true)}>
+              <button
+                disabled={!serverAvailable}
+                aria-describedby={
+                  !serverAvailable ? "server-unavailable" : undefined
+                }
+                onClick={() => setServerSnapshotOpen(true)}
+              >
                 Server snapshot
               </button>
             )}
@@ -190,6 +221,12 @@ export default function App() {
             </button>
           </div>
         </header>
+        {supportsServerSnapshots && !serverAvailable && (
+          <p id="server-unavailable" className="server-hint">
+            Server snapshots need the local Node server. See the README for
+            setup.
+          </p>
+        )}
         {storageWarning && (
           <p role="alert" className="warning">
             {storageWarning}

@@ -16,7 +16,7 @@ The demo uses fictional customers and browser storage. It opens directly into a 
 4. Select a few visible requests and apply a new status. The selection count and queue update together.
 5. Export a backup, reset the sample data, then import the backup to restore the edited workspace.
 
-On a narrow screen the table scrolls within the queue; controls and dialogs stay within the page. The sidebar changes status while preserving other filters. Open means an unresolved request awaiting work; it does not claim that triage has never taken place.
+On narrow screens the table scrolls within the queue. Sidebar status filters preserve other filters.
 
 ## Code worth reviewing
 
@@ -30,8 +30,6 @@ On a narrow screen the table scrolls within the queue; controls and dialogs stay
 | Preserve keyboard navigation after editing      | [Ticket dialog](src/components/TicketDialog.tsx), [queue state](src/App.tsx) | Escape, focus restoration and filtered-out requests in browser smoke                                 |
 
 The regression suite includes long imported names, an assignee literally named `All`, histories exceeding 500 entries and an attempted edit at the JSON size limit. These are examples of data-contract and interaction failures found during browser review.
-
-Unreadable saved views can be discarded through a confirmed reset. This leaves requests and current filters intact. If another tab changed the saved copy, reset preserves it.
 
 ## Run locally
 
@@ -49,6 +47,8 @@ npm run build
 npm run start
 # http://127.0.0.1:3000
 ```
+
+Server snapshot is enabled after the local API responds with a valid JSON revision. Vite development and preview servers leave it disabled; the public demo hides it.
 
 Choose **Server snapshot → Refresh server copy** to compare the current server revision. Saving uses an ETag and `If-Match`; a stale revision returns HTTP 412. Replacing either copy is an explicit action. The database is `data/workspace.sqlite`, excluded from git.
 

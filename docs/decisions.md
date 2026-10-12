@@ -63,3 +63,7 @@ Status, priority, assignee and sidebar labels use darker colours against their a
 Select all applies to the visible page. Selection is retained when changing pages, while changing filters clears it. A visible hint states the pagination rule and a browser regression checks selecting and deselecting separate pages.
 
 The 2 MB JSON limit is measured in UTF-8 bytes, matching the HTTP boundary. A regression uses a Cyrillic document that fits the former string-length limit but exceeds the byte limit. Small Unicode documents still round-trip normally. An unreadable-storage warning now explains that the displayed data is the sample and that editing or importing replaces the unreadable saved copy; exporting the sample is not presented as recovery of that copy.
+
+## Local API availability
+
+A loopback hostname alone does not imply an API. The header performs one bounded GET probe and enables Server snapshot only for a JSON response with a valid ETag. A Vite HTML fallback keeps it disabled with a setup hint. Non-loopback deployments neither probe nor show the control. The dialog still handles later network failures and revision conflicts.

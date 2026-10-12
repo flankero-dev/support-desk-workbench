@@ -4,6 +4,7 @@ import { mkdir, readFile, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve, join } from "node:path";
 import { chromium } from "playwright";
+import { spawn } from "node:child_process";
 
 const server = createAppServer();
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -533,6 +534,79 @@ try {
     .click();
   assert.equal(await apiPage.getByRole("dialog").count(), 0);
   await apiPage.close();
+  // A loopback Vite-style HTML fallback is not the optional workspace API.
+  const noApi = await browser.newPage();
+  await noApi.route("**/api/workspace", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "text/html",
+      body: "<!doctype html><title>Vite</title>",
+    }),
+  );
+  await noApi.goto(url);
+  await noApi
+    .getByText("Server snapshots need the local Node server.", { exact: false })
+    .waitFor();
+  assert.equal(
+    await noApi
+      .getByRole("button", { name: "Server snapshot", exact: true })
+      .isDisabled(),
+    true,
+  );
+  assert.equal(await noApi.getByRole("dialog").count(), 0);
+  await noApi.close();
+  // Exercise the real standard Vite dev server, not only an intercepted response.
+  const dev = spawn(
+    process.execPath,
+    [
+      "node_modules/vite/bin/vite.js",
+      "--host",
+      "127.0.0.1",
+      "--port",
+      "4183",
+      "--strictPort",
+    ],
+    { stdio: ["ignore", "pipe", "pipe"] },
+  );
+  try {
+    await new Promise((resolve, reject) => {
+      const timer = setTimeout(
+        () => reject(new Error("Dev server did not start")),
+        10000,
+      );
+      dev.once("exit", (code) => {
+        clearTimeout(timer);
+        reject(new Error(`Dev exited: ${code}`));
+      });
+      dev.stdout.on("data", (data) => {
+        if (String(data).includes("4183")) {
+          clearTimeout(timer);
+          resolve();
+        }
+      });
+    });
+    const devPage = await browser.newPage();
+    const fallback = devPage.waitForResponse((response) =>
+      response.url().endsWith("/api/workspace"),
+    );
+    await devPage.goto("http://127.0.0.1:4183/");
+    assert.match((await fallback).headers()["content-type"], /text\/html/);
+    assert.equal(
+      await devPage
+        .getByRole("button", { name: "Server snapshot", exact: true })
+        .isDisabled(),
+      true,
+    );
+    await devPage
+      .getByText("Server snapshots need the local Node server.", {
+        exact: false,
+      })
+      .waitFor();
+    await devPage.screenshot({ path: "docs/dev-api-unavailable.png" });
+    await devPage.close();
+  } finally {
+    dev.kill();
+  }
   // Serve the actual production build under a non-loopback origin, as on Pages.
   // Static hosts must not advertise a local-only API action that returns 404.
   const hosted = await browser.newPage();

@@ -137,7 +137,7 @@ export function SavedViews({
             id="view-name"
             value={name}
             maxLength={40}
-            placeholder="Name current filters…"
+            placeholder="View name"
             onChange={(event) => setName(event.target.value)}
             required
           />

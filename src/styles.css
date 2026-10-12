@@ -950,3 +950,34 @@ dialog::backdrop {
     margin-top: 4px;
   }
 }
+
+.server-hint {
+  margin: -8px 0 20px;
+  color: #596b63;
+  font-size: 13px;
+}
+
+@media (max-width: 480px) {
+  .saved-views-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .saved-views-controls > label,
+  .saved-views-controls form {
+    grid-column: 1 / -1;
+  }
+  .saved-views-controls select {
+    width: 100%;
+    max-width: none;
+  }
+  .queue-heading {
+    flex-wrap: wrap;
+  }
+  .queue-heading > label {
+    width: 100%;
+  }
+  .queue-heading > label select {
+    flex: 1;
+    min-width: 0;
+  }
+}
