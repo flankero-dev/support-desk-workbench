@@ -684,7 +684,7 @@ dialog::backdrop {
 .announcement {
   font-size: 12px;
   color: #496850;
-  text-align: right;
+  padding: 8px 20px;
   min-height: 18px;
 }
 .sr-only {
@@ -935,4 +935,18 @@ dialog::backdrop {
 }
 .reset-views-dialog button {
   margin: 8px 8px 0 0;
+}
+
+#import-file {
+  width: 100%;
+  max-width: 100%;
+}
+.table-mobile-hint {
+  display: none;
+}
+@media (max-width: 650px) {
+  .table-mobile-hint {
+    display: block;
+    margin-top: 4px;
+  }
 }

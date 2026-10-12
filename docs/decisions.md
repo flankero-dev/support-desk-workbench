@@ -22,7 +22,7 @@ The parser starts with unknown JSON, checks the version, required fields, unique
 
 Validating TypeScript types alone would not validate a file supplied at runtime. Parsing and validation therefore belong to the domain boundary, not to an input component.
 
-The same contract is used when loading browser storage and handling the local API. Export uses compact JSON. Persistence checks the serialized copy before writing so growth cannot overwrite the last saved copy with a document the loader rejects.
+The same contract is used when loading browser storage and handling the local API. Export uses compact JSON. Imports validate both the input and its canonical export size. Every mutation checks serialized UTF-8 size before committing to React state; a change that exceeds 2 MB is rejected, preserving the current requests and a draft note. Persistence retains a defensive validation before writing. This keeps export and restore within the same contract even when browser storage is blocked or a tab is conflicted.
 
 ## Multiple tabs do not silently win
 
@@ -52,7 +52,7 @@ Evidence: [server](../server/app.ts), [API tests](../tests/server-api.test.mjs).
 - A 200-character assignee must survive URL encoding and named-view reload.
 - The assignee `All` must remain distinct from the unfiltered queue.
 - An imported history of 500 entries must accept another note and still reload.
-- A save that crosses the size boundary must preserve the previous saved bytes and show a warning.
+- An edit that would cross the size boundary must preserve both in-memory and saved requests, retain the note draft and show a rejection. Exporting the unchanged workspace must still restore successfully.
 
 These cases are covered in the domain and browser suites. Coverage is scoped to the implemented workflows, not a claim that every browser or arbitrary dataset has been certified.
 

@@ -19,6 +19,19 @@ export function TicketDialog({
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const [note, setNote] = useState("");
+  const [error, setError] = useState("");
+  function update(
+    changes: Partial<Pick<Ticket, "status" | "priority" | "assignee">>,
+  ) {
+    try {
+      onUpdate(changes);
+      setError("");
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : "The request was not changed.",
+      );
+    }
+  }
   useEffect(() => {
     ref.current?.showModal();
   }, []);
@@ -50,7 +63,7 @@ export function TicketDialog({
             Status
             <select
               value={ticket.status}
-              onChange={(e) => onUpdate({ status: e.target.value as Status })}
+              onChange={(e) => update({ status: e.target.value as Status })}
             >
               {statuses.map((s) => (
                 <option key={s} value={s}>
@@ -63,9 +76,7 @@ export function TicketDialog({
             Priority
             <select
               value={ticket.priority}
-              onChange={(e) =>
-                onUpdate({ priority: e.target.value as Priority })
-              }
+              onChange={(e) => update({ priority: e.target.value as Priority })}
             >
               {priorities.map((p) => (
                 <option key={p} value={p}>
@@ -78,7 +89,7 @@ export function TicketDialog({
             Assignee
             <select
               value={ticket.assignee}
-              onChange={(e) => onUpdate({ assignee: e.target.value })}
+              onChange={(e) => update({ assignee: e.target.value })}
             >
               {assignees.map((a) => (
                 <option key={a} value={a}>
@@ -88,6 +99,11 @@ export function TicketDialog({
             </select>
           </label>
         </div>
+        {error && (
+          <p className="error" role="alert">
+            {error}
+          </p>
+        )}
         <section aria-labelledby="activity-heading">
           <h3 id="activity-heading">Activity</h3>
           <ol className="activity">
@@ -113,8 +129,17 @@ export function TicketDialog({
           onSubmit={(e) => {
             e.preventDefault();
             if (note.trim()) {
-              onNote(note);
-              setNote("");
+              try {
+                onNote(note);
+                setNote("");
+                setError("");
+              } catch (cause) {
+                setError(
+                  cause instanceof Error
+                    ? cause.message
+                    : "The note was not added.",
+                );
+              }
             }
           }}
         >

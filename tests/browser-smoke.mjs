@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { createAppServer } from "../server/app.ts";
-import { mkdir, readFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { mkdir, readFile, mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { resolve, join } from "node:path";
 import { chromium } from "playwright";
 
 const server = createAppServer();
@@ -15,6 +16,7 @@ const browser = await chromium.launch({
 });
 const errors = [];
 try {
+  await mkdir("docs", { recursive: true });
   const page = await browser.newPage({
     viewport: { width: 1440, height: 1000 },
   });
@@ -39,6 +41,31 @@ try {
   );
   await page
     .getByRole("button", { name: "Cancel selection", exact: true })
+    .click();
+  await page.getByLabel("Select SD-1042", { exact: true }).check();
+  await page.getByLabel("New status", { exact: true }).selectOption("Open");
+  await page.getByRole("button", { name: "Apply status", exact: true }).click();
+  assert.match(
+    await page.locator(".announcement").innerText(),
+    /No changes: all 1 selected requests are already Open/,
+  );
+  await page.getByLabel("Select SD-1042", { exact: true }).check();
+  await page.getByLabel("Select SD-1041", { exact: true }).check();
+  await page.getByRole("button", { name: "Apply status", exact: true }).click();
+  assert.match(
+    await page.locator(".announcement").innerText(),
+    /Updated 1 of 2 selected requests to Open/,
+  );
+  await page.screenshot({
+    path: "docs/support-bulk-feedback.png",
+    fullPage: true,
+  });
+  // Restore the untouched sample for the rest of the scenarios.
+  await page
+    .getByRole("button", { name: "Reset sample data", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Reset workspace", exact: true })
     .click();
   // Browser translators may change option labels. Labels must never become domain values.
   assert.equal(await page.locator("html").getAttribute("translate"), "no");
@@ -173,7 +200,9 @@ try {
   await page
     .getByRole("button", { name: "Clear filters", exact: true })
     .click();
-  await page.getByRole("button", { name: "Import JSON", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Restore workspace", exact: true })
+    .click();
   await page.getByLabel("Workspace JSON").fill("{broken");
   await page
     .getByRole("button", { name: "Replace workspace", exact: true })
@@ -197,7 +226,9 @@ try {
     .getByRole("button", { name: "Reset workspace", exact: true })
     .click();
   assert.equal(await page.locator("tbody .status.resolved").count(), 0);
-  await page.getByRole("button", { name: "Import JSON", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Restore workspace", exact: true })
+    .click();
   await page.getByLabel("Workspace JSON").fill(JSON.stringify(exported));
   await page
     .getByRole("button", { name: "Replace workspace", exact: true })
@@ -566,7 +597,7 @@ try {
   await scrollPage.close();
   await hosted.screenshot({ path: "docs/workspace.png", fullPage: true });
   await hosted
-    .getByRole("button", { name: "Import JSON", exact: true })
+    .getByRole("button", { name: "Restore workspace", exact: true })
     .click();
   assert.equal(await hosted.getByRole("dialog").count(), 1);
   await hosted.getByRole("button", { name: "Cancel", exact: true }).click();
@@ -585,7 +616,9 @@ try {
     assignee: longAssignee,
   };
   edgeSeed[1].assignee = "All";
-  await edge.getByRole("button", { name: "Import JSON", exact: true }).click();
+  await edge
+    .getByRole("button", { name: "Restore workspace", exact: true })
+    .click();
   await edge
     .getByLabel("Workspace JSON")
     .fill(JSON.stringify({ version: 1, tickets: edgeSeed }));
@@ -660,7 +693,9 @@ try {
       .evaluate((el) => el === document.activeElement),
     true,
   );
-  await edge.getByRole("button", { name: "Import JSON", exact: true }).click();
+  await edge
+    .getByRole("button", { name: "Restore workspace", exact: true })
+    .click();
   const historyTicket = {
     ...edgeSeed[1],
     activity: Array.from({ length: 500 }, () => ({
@@ -718,21 +753,130 @@ try {
   await capacity.getByLabel("Internal note").fill("N".repeat(1000));
   await capacity.getByRole("button", { name: "Add note", exact: true }).click();
   await capacity
+    .getByRole("alert")
+    .filter({ hasText: "Nothing was changed" })
+    .waitFor();
+  assert.equal(
+    await capacity.getByLabel("Internal note").inputValue(),
+    "N".repeat(1000),
+  );
+  assert.equal(await capacity.locator(".activity li").count(), count);
+  await capacity.screenshot({
+    path: "docs/support-size-rejection.png",
+  });
+  await capacity
+    .getByRole("dialog")
+    .getByRole("combobox", { name: "Status", exact: true })
+    .selectOption("Resolved");
+  assert.equal(
+    await capacity
+      .getByRole("dialog")
+      .getByRole("combobox", { name: "Status", exact: true })
+      .inputValue(),
+    nearLimitTicket.status,
+  );
+  await capacity
     .getByRole("button", { name: "Close ticket", exact: true })
     .click();
-  await capacity
-    .getByRole("alert")
-    .filter({ hasText: "2 MB save limit" })
-    .waitFor();
   assert.equal(
     await capacity.evaluate(() =>
       localStorage.getItem("support-desk-workbench:v1"),
     ),
     nearLimit,
   );
+  const exportPromise = capacity.waitForEvent("download");
+  await capacity
+    .getByRole("button", { name: "Export workspace", exact: false })
+    .click();
+  const exportedFile = await exportPromise;
+  const downloadDirectory = await mkdtemp(
+    join(tmpdir(), "support-desk-export-"),
+  );
+  const downloadedPath = join(
+    downloadDirectory,
+    exportedFile.suggestedFilename(),
+  );
+  await exportedFile.saveAs(downloadedPath);
+  const exportedJSON = await readFile(downloadedPath, "utf8");
+  const { parseImport } = await import("../src/domain/tickets.ts");
+  assert.deepEqual(parseImport(exportedJSON), [nearLimitTicket]);
+  await capacity
+    .getByRole("button", { name: "Reset sample data", exact: true })
+    .click();
+  await capacity
+    .getByRole("button", { name: "Reset workspace", exact: true })
+    .click();
+  assert.equal(await capacity.locator("tbody tr").count(), 8);
+  await capacity
+    .getByRole("button", { name: "Restore workspace", exact: true })
+    .click();
+  await capacity
+    .getByLabel("Exported workspace file")
+    .setInputFiles(downloadedPath);
+  await capacity.getByLabel("Workspace JSON").evaluate(
+    (element) =>
+      new Promise((resolve) => {
+        const poll = () => (element.value ? resolve() : setTimeout(poll, 10));
+        poll();
+      }),
+  );
+  await capacity
+    .getByRole("status")
+    .filter({ hasText: "Loaded support-desk-workspace" })
+    .waitFor();
+  await capacity.setViewportSize({ width: 320, height: 900 });
+  assert.equal(
+    await capacity
+      .getByRole("dialog")
+      .evaluate((element) => element.scrollWidth <= element.clientWidth + 1),
+    true,
+  );
+  await capacity.screenshot({ path: "docs/support-file-restore.png" });
+
+  await capacity
+    .getByRole("button", { name: "Replace workspace", exact: true })
+    .click();
+  assert.equal(await capacity.locator("tbody tr").count(), 1);
+  await capacity
+    .getByRole("button", { name: "Restore workspace", exact: true })
+    .click();
+  await capacity.getByLabel("Exported workspace file").setInputFiles({
+    name: "broken.json",
+    mimeType: "application/json",
+    buffer: Buffer.from("{broken"),
+  });
+  await capacity
+    .getByRole("alert")
+    .filter({ hasText: "Invalid JSON" })
+    .waitFor();
+  assert.equal(
+    await capacity
+      .getByRole("button", { name: "Replace workspace", exact: true })
+      .isDisabled(),
+    true,
+  );
+  assert.equal(
+    await capacity.evaluate(
+      () =>
+        JSON.parse(localStorage.getItem("support-desk-workbench:v1")).tickets
+          .length,
+    ),
+    1,
+  );
+  // The same file can be chosen again after a failed import.
+  await capacity
+    .getByLabel("Exported workspace file")
+    .setInputFiles(downloadedPath);
+  await capacity.waitForFunction(
+    () => document.querySelector("#import-json").value.length > 0,
+  );
+  await capacity
+    .getByRole("button", { name: "Replace workspace", exact: true })
+    .click();
   await capacity.close();
+  await rm(downloadDirectory, { recursive: true, force: true });
   await edge.close();
-  for (const width of [320, 390, 768, 1024, 1440, 1920]) {
+  for (const width of [320, 360, 390, 768, 1024, 1440, 1920]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto(url);
     assert.equal(
