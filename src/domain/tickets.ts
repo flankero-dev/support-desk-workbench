@@ -21,6 +21,7 @@ export type Filters = {
   priority: string;
   assignee: string;
   sort: string;
+  assigneeIsExact?: boolean;
 };
 export const defaultFilters: Filters = {
   query: "",
@@ -38,7 +39,8 @@ export function readFilters(search: string): Filters {
     query: (params.get("q") ?? "").slice(0, 200),
     status: allowed("status", statuses),
     priority: allowed("priority", priorities),
-    assignee: (params.get("assignee") ?? "All").slice(0, 80),
+    assignee: (params.get("assignee") ?? "All").slice(0, 200),
+    ...(params.get("assignee") === "All" ? { assigneeIsExact: true } : {}),
     sort: params.get("sort") === "newest" ? "newest" : "priority",
   };
 }
@@ -46,7 +48,7 @@ export function writeFilters(filters: Filters): string {
   const params = new URLSearchParams();
   if (filters.query) params.set("q", filters.query);
   for (const key of ["status", "priority", "assignee"] as const)
-    if (filters[key] !== "All") params.set(key, filters[key]);
+    if (filters[key] !== "All" || (key === "assignee" && filters.assigneeIsExact)) params.set(key, filters[key]);
   if (filters.sort !== "priority") params.set("sort", filters.sort);
   return params.toString() ? `?${params}` : "";
 }
@@ -59,7 +61,7 @@ export function filterTickets(tickets: Ticket[], filters: Filters): Ticket[] {
           `${t.id} ${t.title} ${t.customer}`.toLowerCase().includes(query)) &&
         (filters.status === "All" || t.status === filters.status) &&
         (filters.priority === "All" || t.priority === filters.priority) &&
-        (filters.assignee === "All" || t.assignee === filters.assignee),
+        ((filters.assignee === "All" && !filters.assigneeIsExact) || t.assignee === filters.assignee),
     )
     .sort((a, b) => {
       if (filters.sort === "priority") {
@@ -174,7 +176,6 @@ export function parseImport(input: string): Ticket[] {
       throw new Error(`Ticket ${index + 1}: invalid date.`);
     if (
       !Array.isArray(item.activity) ||
-      item.activity.length > 500 ||
       item.activity.some(
         (a) =>
           !isRecord(a) ||
@@ -206,5 +207,5 @@ export function parseImport(input: string): Ticket[] {
   });
 }
 export function exportTickets(tickets: Ticket[]): string {
-  return JSON.stringify({ version: 1, tickets }, null, 2);
+  return JSON.stringify({ version: 1, tickets });
 }

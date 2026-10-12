@@ -6,6 +6,7 @@ import {
   writeFilters,
 } from "../domain/tickets.ts";
 import type { Filters } from "../domain/tickets.ts";
+const assigneeValue = (name: string) => name === "All" || name.startsWith("person:") ? `person:${name}` : name;
 export function QueueFilters({
   filters,
   changeFilters,
@@ -41,7 +42,7 @@ export function QueueFilters({
         >
           <option value="All">All statuses</option>
           {statuses.map((s) => (
-            <option key={s}>{s}</option>
+            <option key={s} value={s}>{s}</option>
           ))}
         </select>
       </label>
@@ -53,21 +54,26 @@ export function QueueFilters({
         >
           <option value="All">All priorities</option>
           {priorities.map((p) => (
-            <option key={p}>{p}</option>
+            <option key={p} value={p}>{p}</option>
           ))}
         </select>
       </label>
       <label>
         Assignee
         <select
-          value={filters.assignee}
-          onChange={(e) => changeFilters({ assignee: e.target.value })}
+          value={filters.assignee === "All" && !filters.assigneeIsExact ? "All" : assigneeValue(filters.assignee)}
+          onChange={(e) => {
+            const value = e.target.value;
+            const assignee = value.startsWith("person:") ? value.slice(7) : value;
+            changeFilters({ assignee, assigneeIsExact: value === "person:All" || undefined });
+          }}
         >
           <option value="All">Anyone</option>
           {!assignees.includes(filters.assignee) &&
-            filters.assignee !== "All" && <option>{filters.assignee}</option>}
+            (filters.assignee !== "All" || filters.assigneeIsExact) &&
+            <option value={assigneeValue(filters.assignee)}>{filters.assignee}</option>}
           {assignees.map((a) => (
-            <option key={a}>{a}</option>
+            <option key={a} value={assigneeValue(a)}>{a}</option>
           ))}
         </select>
       </label>

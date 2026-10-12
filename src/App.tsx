@@ -86,7 +86,11 @@ export default function App() {
     };
   }, []);
   function changeFilters(next: Partial<Filters>) {
-    setFilters((f) => ({ ...f, ...next }));
+    setFilters((f) => {
+      const updated = { ...f, ...next };
+      if ("assignee" in next && !next.assigneeIsExact) delete updated.assigneeIsExact;
+      return updated;
+    });
     setPage(1);
     setSelected([]);
   }
@@ -249,7 +253,7 @@ export default function App() {
                 onChange={(e) => setBulkStatus(e.target.value as Status)}
               >
                 {statuses.map((s) => (
-                  <option key={s}>{s}</option>
+                  <option key={s} value={s}>{s}</option>
                 ))}
               </select>
               <button
@@ -289,12 +293,9 @@ export default function App() {
             </div>
           )}
           <footer className="pagination">
-            <span>
-              {results.length
-                ? `${(currentPage - 1) * pageSize + 1}–${Math.min(currentPage * pageSize, results.length)}`
-                : "0"}{" "}
-              of {results.length} requests
-            </span>
+            <span>{results.length
+              ? `${(currentPage - 1) * pageSize + 1}–${Math.min(currentPage * pageSize, results.length)} of ${results.length} requests`
+              : "0 of 0 requests"}</span>
             <div>
               <button
                 disabled={currentPage === 1}
@@ -303,7 +304,7 @@ export default function App() {
                 Previous
               </button>
               <span>
-                Page {currentPage} of {totalPages}
+                {`Page ${currentPage} of ${totalPages}`}
               </span>
               <button
                 disabled={currentPage === totalPages}
@@ -315,8 +316,8 @@ export default function App() {
           </footer>
         </section>
         <p className="workspace-footer">
-          Independent frontend project · Sample data · No external support
-          service connected
+          Sample workspace · Changes stay in this browser ·{" "}
+          <a href="https://github.com/flankero-dev/support-desk-workbench">Source code</a>
         </p>
         <div role="status" className="announcement">
           {message}
@@ -329,7 +330,9 @@ export default function App() {
           assignees={assignees}
           onClose={() => {
             setActiveId(null);
-            openButtons.current.get(active.id)?.focus();
+            const trigger = openButtons.current.get(active.id);
+            if (trigger) trigger.focus();
+            else searchRef.current?.focus();
           }}
           onUpdate={(changes) =>
             setTickets((ts) =>

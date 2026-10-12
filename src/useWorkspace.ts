@@ -40,11 +40,16 @@ export function useWorkspace() {
         return;
       }
       const saved = exportTickets(tickets);
+      // Keep the saved copy readable by the same importer used on reload.
+      parseImport(saved);
       localStorage.setItem(storageKey, saved);
       lastSaved.current = saved;
       queueMicrotask(() => setStorageWarning(""));
-    } catch {
-      queueMicrotask(() => setStorageWarning("Browser storage is unavailable or full. Changes work in this tab only; export a backup."));
+    } catch (error) {
+      const warning = error instanceof Error && error.message.startsWith("Import is limited")
+        ? "The workspace exceeds the 2 MB save limit. The previous saved copy is unchanged. Changes work in this tab only; export a backup before closing."
+        : "Browser storage is unavailable or full. Changes work in this tab only; export a backup.";
+      queueMicrotask(() => setStorageWarning(warning));
     }
   }, [tickets, initial.tickets]);
   return { tickets, setTickets, storageWarning, storageConflict };

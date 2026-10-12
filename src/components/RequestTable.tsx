@@ -28,6 +28,10 @@ export function RequestTable({
                 type="checkbox"
                 aria-label="Select visible requests"
                 disabled={!visible.length}
+                ref={(input) => {
+                  if (input) input.indeterminate = visible.some((t) => selected.includes(t.id)) &&
+                    !visible.every((t) => selected.includes(t.id));
+                }}
                 checked={
                   visible.length > 0 &&
                   visible.every((t) => selected.includes(t.id))

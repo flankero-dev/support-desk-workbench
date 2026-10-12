@@ -1,37 +1,37 @@
 # Support Desk Workbench
 
-A React and TypeScript interface for triaging support requests. Open a request, update its status or owner, add context, and continue later without losing local changes.
+A support queue for triaging requests, recording internal notes and keeping work between visits. Built with React, TypeScript and Vite; an optional local Node.js server adds SQLite snapshots.
 
-This is an independent portfolio project with fictional customers. It is not client work and does not connect to a support provider.
+[Live demo](https://flankero-dev.github.io/support-desk-workbench/) · [Checks](https://github.com/flankero-dev/support-desk-workbench/actions/workflows/checks.yml) · [Engineering decisions](docs/decisions.md)
 
-[Open the live demo](https://flankero-dev.github.io/support-desk-workbench/)
+The demo uses fictional customers and browser storage. It opens directly into a working queue.
 
-![Request queue](docs/workspace.jpg)
+![Request queue with filters, saved views and pagination](docs/workspace.png)
 
-## Try the workflow
+## Review it in two minutes
 
-1. Search for **Maya**, then open the matching checkout request.
-2. Change its status and add an internal note. Close the dialog with Escape.
-3. Reload the page: the search is in the URL, and the ticket edits remain in browser storage.
-4. Clear the filters, select several requests, and apply a status in one operation.
-5. Export the workspace. Reset the sample data, then import the export to restore your work.
-6. Set a priority and owner filter, name it, and click **Save view**. Clear the filters, then choose the saved view to restore the complete queue configuration.
+1. Search for **Maya** and open the checkout request. Change its status, add a note, then close it with **Escape**.
+2. Reload. The URL restores the search; the edited request and note remain saved.
+3. Clear the search, select **Open** and **Urgent**, name the filters and choose **Save view**. Clear the filters and reapply that view.
+4. Select a few visible requests and apply a new status. The selection count and queue update together.
+5. Export a backup, reset the sample data, then import the backup to restore the edited workspace.
 
-The sidebar and filters compose: selecting “Waiting” does not silently discard an existing priority filter. The queue shows an explicit empty state when their combination has no results.
+On a narrow screen the table scrolls within the queue; controls and dialogs stay within the page. The sidebar changes status while preserving other filters.
 
-## Features
+## Code worth reviewing
 
-- Search across request IDs, titles and customer names; filter by status, priority and owner.
-- URL query parameters encode filters so a queue view can be bookmarked. Ticket data itself stays local.
-- Up to eight named queue views persist search, status, priority, owner and sort order. Duplicate names and filter sets are rejected; applying a view resets pagination and selection.
-- Priority and timestamp sorting, pagination, per-row selection and bulk status updates.
-- Request details, editable fields and chronological activity records.
-- Versioned browser persistence and validated JSON import/export.
-- Recoverable import errors; duplicate IDs, invalid dates, missing fields and unsupported versions are rejected before replacement.
-- Native modal dialogs with Escape dismissal and keyboard focus containment; visible focus styles and a search shortcut (`/`).
-- Responsive navigation and controls. On small screens the data table scrolls within its container rather than widening the page.
+| Decision | Implementation | Evidence |
+|---|---|---|
+| Keep filtering and updates independent of React | [Ticket domain](src/domain/tickets.ts) | [Composed filters, URL round trips, immutable updates and import validation](tests/tickets.test.mjs) |
+| Preserve the complete view in a bookmark | [Queue state](src/App.tsx), [saved views](src/domain/views.ts) | [Duplicate views and validation](tests/views.test.mjs) |
+| Protect stored edits when another tab writes | [Workspace persistence](src/useWorkspace.ts) | [Two-tab conflict and blocked-storage scenarios](tests/browser-smoke.mjs) |
+| Validate a replacement before applying it | [Import dialog](src/components/ImportDialog.tsx) | Invalid JSON leaves the current workspace intact |
+| Provide a real optional HTTP/SQL boundary | [Loopback server](server/app.ts) | [Restart persistence and concurrent revision updates](tests/server-api.test.mjs) |
+| Preserve keyboard navigation after editing | [Ticket dialog](src/components/TicketDialog.tsx), [queue state](src/App.tsx) | Escape, focus restoration and filtered-out requests in browser smoke |
 
-## Run
+The regression suite includes long imported names, an assignee literally named `All`, histories exceeding 500 entries and a save that crosses the JSON size limit. These are examples of data-contract and interaction failures found during browser review.
+
+## Run locally
 
 Use Node.js 24 and npm.
 
@@ -40,7 +40,17 @@ npm ci
 npm run dev
 ```
 
-## Check
+To run the built application with the optional SQLite snapshot API:
+
+```sh
+npm run build
+npm run start
+# http://127.0.0.1:3000
+```
+
+Choose **Server snapshot → Refresh server copy** to compare the current server revision. Saving uses an ETag and `If-Match`; a stale revision returns HTTP 412. Replacing either copy is an explicit action. The database is `data/workspace.sqlite`, excluded from git.
+
+## Verify
 
 ```sh
 npm test
@@ -50,51 +60,12 @@ npx playwright install chromium
 npm run test:browser
 ```
 
-The domain tests cover composed filters, URL encoding, ordering, immutable updates, activity history, import validation and saved-view validation. The browser smoke test serves the production build and checks the user workflow, reload persistence, modal focus, import/export, mobile overflow and storage failures. Saved-view checks cover applying, removing, duplicate filters, cross-tab updates and storage failure recovery. It also produces screenshots in `docs/`. The demo deployment runs these checks before publishing.
+Tests use Node's built-in runner. Browser checks use the production build and cover filtering, pagination, saved views, editing, import/export, reset, keyboard focus, storage conflicts and server snapshots. CI runs these checks; the Pages deployment also checks the build before publishing. Browser screenshots are available as CI artifacts.
 
-## Structure
+## Boundaries
 
-```text
-src/domain/tickets.ts        Types, filters, updates and import contract
-src/domain/seed.ts           Fictional sample requests
-src/domain/views.ts          Named queue view validation
-src/useWorkspace.ts          Browser persistence and error reporting
-src/components/              Queue controls, table and dialogs
-src/App.tsx                  Queue state and workspace composition
-tests/                       Domain and browser tests
-```
-
-Domain functions do not depend on React or browser APIs. Incoming data is validated as unknown JSON before entering the typed model. Import picks known fields instead of spreading untrusted objects into application state. Text is rendered by React; no imported HTML is executed.
-
-## Scope and tradeoffs
-
-The hosted demo is a frontend application. An optional loopback server provides SQLite snapshots for local use; it is described below. There is no sign-in, role-based access or external email delivery. Notes and status changes are records in this browser, not messages to real customers. Activity is useful local history, not a tamper-proof audit log.
-
-Saved views are browser preferences, separate from ticket export and server snapshots. Other tabs refresh through storage events, and edits read the latest stored list. This is not transactional storage: simultaneous writes from two tabs can still conflict. Damaged view data is kept rather than silently replaced.
-
-Storage is scoped to the origin and browser profile. Clearing site data removes it. Export before switching browsers. If saved data is unreadable, opening the app leaves those saved bytes intact; a visible warning accompanies the fallback sample workspace. Subsequent edits replace that local workspace. Storage write failures are also reported rather than silently treated as saved.
-
-Imports replace the workspace after validation, with a warning in the dialog. The limits are 500 requests and 2 million JSON characters. The app is intended for a small queue; it does not claim large-dataset performance or screen-reader certification. Multiple tabs do not merge edits: if another tab updates storage, saving in a stale tab is paused. Export any unsaved changes, then use “Reload saved workspace” to load the saved version.
-
-For a shared service, the next step would be an API-backed repository, server-side authorization and optimistic concurrency checks. Adding a fake authentication screen would not provide those guarantees.
-
-## Optional SQLite server snapshots
-
-The hosted GitHub Pages demo remains a browser-only workspace. The repository also includes a loopback Node.js server that serves the built frontend and stores a versioned workspace snapshot in SQLite. No account, external database or paid service is required.
-
-Server snapshot controls appear only on `localhost` or `127.0.0.1`. The public demo offers browser storage and JSON import/export; it does not advertise a server API that is unavailable on static hosting.
-
-```sh
-npm ci
-npm run build
-npm run start
-# Open http://127.0.0.1:3000
-```
-
-Open **Server snapshot** and choose **Refresh server copy**. This reads the saved revision without changing browser data. **Save browser copy to server** sends a validated JSON document with `If-Match`; a conditional SQL update rejects a stale revision with HTTP 412. Refresh and compare before choosing which copy to keep. **Replace browser copy with server copy** is an explicit replacement; export a backup first.
-
-`GET /api/workspace` returns the versioned document and an ETag. `PUT /api/workspace` requires JSON and the last loaded ETag. Invalid documents, duplicate IDs, missing revisions and cross-origin writes do not update the snapshot. The local database is `data/workspace.sqlite` and is excluded from git.
-
-The API integration tests use real HTTP and temporary SQLite databases. They cover persistence across restart, concurrent writes, rejected input and request size limits. The Playwright test runs against this server and verifies stale-write feedback, refresh, save and replacement through the UI.
-
-This is a local development/reference server, bound to 127.0.0.1. It deliberately has no user accounts, permissions or multi-tenant data isolation. Do not expose it as a public service; a hosted version would need authentication, authorization, managed storage and operational controls. It is evidence of a working HTTP/SQL flow, not a claim of production infrastructure experience.
+- The public demo stores requests in this browser and profile. Export before clearing site data or switching browsers.
+- Imports replace the queue after validation. Limits: 500 requests and 2 million JSON characters. Up to eight saved views are separate browser preferences.
+- Storage conflicts pause saving in the stale tab. Export its unsaved edits if needed, then reload the saved workspace; changes are not merged automatically.
+- The SQLite server binds to loopback and has one workspace. It is a local reference implementation, without user accounts or multi-tenant authorization.
+- Activity is editable local history. This project does not claim a production support integration or a certified accessibility audit.
