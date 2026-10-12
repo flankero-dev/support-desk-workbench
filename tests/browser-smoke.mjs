@@ -25,6 +25,16 @@ try {
     1,
   );
   assert.equal(await page.locator("tbody tr").count(), 8);
+  // Page selection persists across pagination; deselecting a page leaves other pages alone.
+  await page.getByLabel("Select SD-1042", { exact: true }).check();
+  await page.getByRole("button", { name: "Next", exact: true }).click();
+  await page.getByLabel("Select visible requests", { exact: true }).check();
+  assert.match(await page.locator(".bulk-bar").innerText(), /9 selected/);
+  await page.getByLabel("Select visible requests", { exact: true }).uncheck();
+  assert.match(await page.locator(".bulk-bar").innerText(), /1 selected/);
+  await page.getByRole("button", { name: "Previous", exact: true }).click();
+  assert.equal(await page.getByLabel("Select SD-1042", { exact: true }).isChecked(), true);
+  await page.getByRole("button", { name: "Cancel selection", exact: true }).click();
   // Browser translators may change option labels. Labels must never become domain values.
   assert.equal(await page.locator("html").getAttribute("translate"), "no");
   // The wrapping label also contains the option text, so an exact label match is incorrect.
@@ -310,6 +320,24 @@ try {
   await hosted.goto("https://demo.example.test/");
   assert.equal(await hosted.getByRole("heading", { name: "Request queue" }).count(), 1);
   assert.equal(await hosted.getByRole("button", { name: "Server snapshot", exact: true }).count(), 0);
+  const contrastProblems = await hosted.locator(".status,.priority,.assignee,.request-meta,td time,.small-label,.workspace-label,.nav span,.metrics small").evaluateAll(elements => {
+    const rgb = value => value.match(/[\d.]+/g).map(Number);
+    const lum = color => color.slice(0, 3).map(v => v / 255).map(v => v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4).reduce((sum, v, i) => sum + v * [.2126,.7152,.0722][i], 0);
+    return elements.filter(el => el.getClientRects().length).flatMap(el => {
+      let bg = [255,255,255]; const ancestors = []; for (let n = el; n; n = n.parentElement) ancestors.unshift(n);
+      for (const n of ancestors) { const c = rgb(getComputedStyle(n).backgroundColor); const a = c[3] ?? 1; bg = bg.map((v,i) => c[i] * a + v * (1-a)); }
+      const fg = rgb(getComputedStyle(el).color); const values = [lum(fg),lum(bg)].sort((a,b) => a-b);
+      const ratio = (values[1]+.05)/(values[0]+.05);
+      return ratio < 4.5 ? [{text:el.textContent,ratio}] : [];
+    });
+  });
+  assert.deepEqual(contrastProblems, [], "compact labels must remain readable against their actual backgrounds");
+  const scrollPage = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  await scrollPage.goto(url);
+  await scrollPage.getByRole("region", { name: "Request table", exact: true }).focus();
+  await scrollPage.keyboard.press("ArrowRight");
+  await scrollPage.waitForFunction(() => document.querySelector(".table-scroll").scrollLeft > 0);
+  await scrollPage.close();
   await hosted.screenshot({ path: "docs/workspace.png", fullPage: true });
   await hosted.getByRole("button", { name: "Import JSON", exact: true }).click();
   assert.equal(await hosted.getByRole("dialog").count(), 1);
