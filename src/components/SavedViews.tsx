@@ -36,8 +36,23 @@ export function SavedViews({
   const resetButtonRef = useRef<HTMLButtonElement>(null);
   const [resetError, setResetError] = useState("");
   const selectRef = useRef<HTMLSelectElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
+  const focusAfterRemoval = useRef(false);
+  const [lastUsedName, setLastUsedName] = useState<string | null>(
+    () =>
+      state.views.find((view) => view.search === writeFilters(filters))?.name ??
+      null,
+  );
   const search = writeFilters(filters);
   const active = state.views.find((view) => view.search === search);
+  const filtersChanged =
+    !active && state.views.some((view) => view.name === lastUsedName);
+  useEffect(() => {
+    if (focusAfterRemoval.current) {
+      focusAfterRemoval.current = false;
+      (selectRef.current ?? nameRef.current)?.focus();
+    }
+  }, [state.views]);
   useEffect(() => {
     const onStorage = (event: StorageEvent) => {
       if (
@@ -75,49 +90,71 @@ export function SavedViews({
   return (
     <div className="saved-views">
       <div className="saved-views-controls">
-        <label htmlFor="saved-view">Saved view</label>
-        <select
-          id="saved-view"
-          ref={selectRef}
-          value={active?.name ?? ""}
-          onChange={(event) => {
-            const view = state.views.find(
-              (item) => item.name === event.target.value,
-            );
-            if (view) {
-              onApply(readFilters(view.search));
-              setMessage(`Applied ${view.name}.`);
-            }
-          }}
-        >
-          <option value="" disabled>
-            Choose a view
-          </option>
-          {state.views.map((view) => (
-            <option key={view.name} value={view.name}>
-              {view.name}
-            </option>
-          ))}
-        </select>
-        <button
-          disabled={!active}
-          aria-label={
-            active ? `Remove saved view ${active.name}` : "Remove saved view"
-          }
-          onClick={() => {
-            if (
-              active &&
-              persist(
-                (views) => views.filter((view) => view.name !== active.name),
-                `Removed ${active.name}.`,
-              )
-            ) {
-              selectRef.current?.focus();
-            }
-          }}
-        >
-          Remove
-        </button>
+        {state.views.length > 0 ? (
+          <>
+            <label htmlFor="saved-view">Saved view</label>
+            <select
+              id="saved-view"
+              ref={selectRef}
+              value={active?.name ?? ""}
+              onChange={(event) => {
+                const view = state.views.find(
+                  (item) => item.name === event.target.value,
+                );
+                if (view) {
+                  onApply(readFilters(view.search));
+                  setLastUsedName(view.name);
+                  setMessage(`Applied ${view.name}.`);
+                }
+              }}
+            >
+              <option value="" disabled>
+                Choose a view
+              </option>
+              {state.views.map((view) => (
+                <option key={view.name} value={view.name}>
+                  {view.name}
+                </option>
+              ))}
+            </select>
+            <button
+              disabled={!active}
+              aria-label={
+                active
+                  ? `Remove saved view ${active.name}`
+                  : "Remove saved view"
+              }
+              onClick={() => {
+                if (
+                  active &&
+                  persist(
+                    (views) =>
+                      views.filter((view) => view.name !== active.name),
+                    `Removed ${active.name}.`,
+                  )
+                ) {
+                  focusAfterRemoval.current = true;
+                  setLastUsedName(null);
+                }
+              }}
+            >
+              Remove
+            </button>
+          </>
+        ) : (
+          <div className="views-empty">
+            <strong>
+              {state.corruptRaw !== null
+                ? "Saved views unavailable"
+                : "No saved views yet"}
+            </strong>
+            <p>
+              {state.corruptRaw !== null
+                ? "Reset the unreadable preferences to save views again."
+                : "Save your current filters to use them again."}
+            </p>
+          </div>
+        )}
         <form
           onSubmit={(event) => {
             event.preventDefault();
@@ -126,8 +163,10 @@ export function SavedViews({
                 (views) => addView(views, name, filters),
                 `Saved ${name.trim()}.`,
               )
-            )
+            ) {
+              setLastUsedName(name.trim());
               setName("");
+            }
           }}
         >
           <label className="sr-only" htmlFor="view-name">
@@ -135,6 +174,7 @@ export function SavedViews({
           </label>
           <input
             id="view-name"
+            ref={nameRef}
             value={name}
             maxLength={40}
             placeholder="View name"
@@ -165,7 +205,11 @@ export function SavedViews({
         className="reset-views-dialog"
         aria-labelledby="reset-views-heading"
         onClose={() => {
-          (resetButtonRef.current ?? selectRef.current)?.focus();
+          (
+            resetButtonRef.current ??
+            selectRef.current ??
+            nameRef.current
+          )?.focus();
         }}
       >
         <h2 id="reset-views-heading">Reset saved views?</h2>
@@ -199,9 +243,13 @@ export function SavedViews({
           Discard saved views
         </button>
       </dialog>
-      <span className="sr-only" role="status">
-        {message}
-      </span>
+      <p className="view-feedback" role="status">
+        {active && active.name !== lastUsedName
+          ? `Current filters match ${active.name}.`
+          : filtersChanged
+            ? "Filters changed. Choose a saved view to restore it."
+            : message}
+      </p>
     </div>
   );
 }
