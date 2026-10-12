@@ -334,7 +334,7 @@ export default function App() {
           <footer className="pagination">
             <span>
               {results.length
-                ? `${(currentPage - 1) * pageSize + 1}–${Math.min(currentPage * pageSize, results.length)} of ${results.length} requests`
+                ? `${(currentPage - 1) * pageSize + 1}–${Math.min(currentPage * pageSize, results.length)} of ${results.length} ${results.length === 1 ? "request" : "requests"}`
                 : "0 of 0 requests"}
             </span>
             <div>
@@ -402,7 +402,9 @@ export default function App() {
             setSelected([]);
             setPage(1);
             setActiveId(null);
-            setMessage(`Imported ${next.length} requests.`);
+            setMessage(
+              `Imported ${next.length} ${next.length === 1 ? "request" : "requests"}.`,
+            );
           }}
         />
       )}
