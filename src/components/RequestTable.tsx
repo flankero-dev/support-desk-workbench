@@ -15,7 +15,7 @@ export function RequestTable({
   onOpen: (id: string) => void;
 }) {
   return (
-    <div className="table-scroll">
+    <div className="table-scroll" role="region" aria-label="Request table" tabIndex={0}>
       <table>
         <caption className="sr-only">
           Filtered customer requests. Open a request to view details and update

@@ -276,6 +276,7 @@ export default function App() {
               <button onClick={() => setSelected([])}>Cancel selection</button>
             </div>
           )}
+          <p className="selection-hint">Select all applies to this page. Selected requests stay selected when you change pages.</p>
           <RequestTable
             visible={visible}
             selected={selected}
