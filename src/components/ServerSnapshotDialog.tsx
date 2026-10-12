@@ -142,8 +142,16 @@ export function ServerSnapshotDialog({
           disabled={busy || !snapshot}
           onClick={() => {
             if (snapshot) {
-              onLoad(snapshot.tickets);
-              dialog.current?.close();
+              try {
+                onLoad(snapshot.tickets);
+                dialog.current?.close();
+              } catch (cause) {
+                setError(
+                  cause instanceof Error
+                    ? cause.message
+                    : "Browser copy was not replaced.",
+                );
+              }
             }
           }}
         >

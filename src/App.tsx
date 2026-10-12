@@ -135,7 +135,7 @@ export default function App() {
           className={filters.status === "Open" ? "nav active" : "nav"}
           onClick={() => changeFilters({ status: "Open" })}
         >
-          <span>Needs triage</span>
+          <span>Open</span>
           <span>{openCount}</span>
         </button>
         <button
@@ -182,7 +182,9 @@ export default function App() {
                 Server snapshot
               </button>
             )}
-            <button onClick={() => setImporting(true)}>Import JSON</button>
+            <button onClick={() => setImporting(true)}>
+              Restore workspace
+            </button>
             <button onClick={exportData}>
               Export workspace <span aria-hidden="true">↗</span>
             </button>
@@ -200,7 +202,7 @@ export default function App() {
         )}
         <section className="metrics" aria-label="Queue overview">
           <div>
-            <span>Needs triage</span>
+            <span>Open</span>
             <strong>{openCount}</strong>
             <small>Open requests</small>
           </div>
@@ -213,7 +215,7 @@ export default function App() {
           </div>
           <div>
             <span>Urgent attention</span>
-            <strong>{urgentCount.toString().padStart(2, "0")}</strong>
+            <strong>{urgentCount}</strong>
             <small>Unresolved urgent requests</small>
           </div>
           <div>
@@ -247,6 +249,9 @@ export default function App() {
             searchRef={searchRef}
           />
           <SavedViews filters={filters} onApply={changeFilters} />
+          <div role="status" className="announcement">
+            {message}
+          </div>
           {selected.length > 0 && (
             <div className="bulk-bar">
               <strong>{selected.length} selected</strong>
@@ -267,16 +272,33 @@ export default function App() {
               <button
                 className="primary"
                 onClick={() => {
-                  setTickets((ts) =>
-                    updateTickets(
-                      ts,
-                      selected,
-                      { status: bulkStatus },
-                      new Date().toISOString(),
-                    ),
-                  );
-                  setMessage(`Updated ${selected.length} selected requests.`);
-                  setSelected([]);
+                  const changed = tickets.filter(
+                    (ticket) =>
+                      selected.includes(ticket.id) &&
+                      ticket.status !== bulkStatus,
+                  ).length;
+                  try {
+                    setTickets((ts) =>
+                      updateTickets(
+                        ts,
+                        selected,
+                        { status: bulkStatus },
+                        new Date().toISOString(),
+                      ),
+                    );
+                    setMessage(
+                      changed
+                        ? `Updated ${changed} of ${selected.length} selected requests to ${bulkStatus}.`
+                        : `No changes: all ${selected.length} selected requests are already ${bulkStatus}.`,
+                    );
+                    setSelected([]);
+                  } catch (error) {
+                    setMessage(
+                      error instanceof Error
+                        ? error.message
+                        : "No requests were changed.",
+                    );
+                  }
                 }}
               >
                 Apply status
@@ -287,6 +309,9 @@ export default function App() {
           <p className="selection-hint">
             Select all applies to this page. Selected requests stay selected
             when you change pages.
+            <span className="table-mobile-hint">
+              Scroll the table horizontally to see all fields.
+            </span>
           </p>
           <RequestTable
             visible={visible}
@@ -330,9 +355,6 @@ export default function App() {
         <p className="workspace-footer">
           Sample workspace · Changes stay in this browser
         </p>
-        <div role="status" className="announcement">
-          {message}
-        </div>
       </main>
       {active && (
         <TicketDialog

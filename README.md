@@ -16,7 +16,7 @@ The demo uses fictional customers and browser storage. It opens directly into a 
 4. Select a few visible requests and apply a new status. The selection count and queue update together.
 5. Export a backup, reset the sample data, then import the backup to restore the edited workspace.
 
-On a narrow screen the table scrolls within the queue; controls and dialogs stay within the page. The sidebar changes status while preserving other filters.
+On a narrow screen the table scrolls within the queue; controls and dialogs stay within the page. The sidebar changes status while preserving other filters. Open means an unresolved request awaiting work; it does not claim that triage has never taken place.
 
 ## Code worth reviewing
 
@@ -29,7 +29,7 @@ On a narrow screen the table scrolls within the queue; controls and dialogs stay
 | Provide a real optional HTTP/SQL boundary       | [Loopback server](server/app.ts)                                             | [Restart persistence and concurrent revision updates](tests/server-api.test.mjs)                     |
 | Preserve keyboard navigation after editing      | [Ticket dialog](src/components/TicketDialog.tsx), [queue state](src/App.tsx) | Escape, focus restoration and filtered-out requests in browser smoke                                 |
 
-The regression suite includes long imported names, an assignee literally named `All`, histories exceeding 500 entries and a save that crosses the JSON size limit. These are examples of data-contract and interaction failures found during browser review.
+The regression suite includes long imported names, an assignee literally named `All`, histories exceeding 500 entries and an attempted edit at the JSON size limit. These are examples of data-contract and interaction failures found during browser review.
 
 Unreadable saved views can be discarded through a confirmed reset. This leaves requests and current filters intact. If another tab changed the saved copy, reset preserves it.
 
@@ -56,6 +56,7 @@ Choose **Server snapshot → Refresh server copy** to compare the current server
 
 ```sh
 npm test
+npm run format:check
 npm run lint
 npm run build
 npx playwright install chromium
@@ -67,7 +68,7 @@ Tests use Node's built-in runner. Browser checks use the production build and co
 ## Boundaries
 
 - The public demo stores requests in this browser and profile. Export before clearing site data or switching browsers.
-- Imports replace the queue after validation. Limits: 500 requests and 2 million UTF-8 bytes. Up to eight saved views are separate browser preferences.
+- Restore accepts an exported JSON file or pasted JSON and replaces the queue after validation. Limits: 500 requests and 2 million UTF-8 bytes, including the canonical export. Edits that would exceed this limit are rejected before changing the workspace; a rejected note remains in the input. Any accepted workspace can be exported and restored. Up to eight saved views are separate browser preferences.
 - Storage conflicts pause saving in the stale tab. Export its unsaved edits if needed, then reload the saved workspace; changes are not merged automatically.
 - The SQLite server binds to loopback and has one workspace. It is a local reference implementation, without user accounts or multi-tenant authorization.
 - The UI appends activity entries; JSON import can replace their content. History is local data, not a tamper-proof audit trail. This project does not claim a production support integration or a certified accessibility audit.

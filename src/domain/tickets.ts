@@ -87,7 +87,7 @@ export function updateTickets(
   at: string,
 ): Ticket[] {
   const selected = new Set(ids);
-  return tickets.map((ticket) => {
+  const updated = tickets.map((ticket) => {
     if (!selected.has(ticket.id)) return ticket;
     const entries = Object.entries(changes).filter(
       ([key, value]) => ticket[key as keyof Ticket] !== value,
@@ -106,6 +106,9 @@ export function updateTickets(
       ],
     };
   });
+  return updated.some((ticket, index) => ticket !== tickets[index])
+    ? updated
+    : tickets;
 }
 export function addNote(
   tickets: Ticket[],
@@ -129,17 +132,25 @@ export function addNote(
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
-export function parseImport(input: string): Ticket[] {
+export const workspaceByteLimit = 2_000_000;
+export function assertWorkspaceSize(input: string): void {
   if (
-    input.length > 2_000_000 ||
-    new TextEncoder().encode(input).byteLength > 2_000_000
+    input.length > workspaceByteLimit ||
+    new TextEncoder().encode(input).byteLength > workspaceByteLimit
   )
-    throw new Error("Import is limited to 2 MB of JSON.");
+    throw new Error(
+      "Workspace JSON is limited to 2 MB (2 million UTF-8 bytes).",
+    );
+}
+export function parseImport(input: string): Ticket[] {
+  assertWorkspaceSize(input);
   let value: unknown;
   try {
     value = JSON.parse(input);
   } catch {
-    throw new Error("Invalid JSON. Paste a file exported from this workspace.");
+    throw new Error(
+      "Invalid JSON. Choose an exported workspace file or paste its contents.",
+    );
   }
   if (
     !isRecord(value) ||
@@ -150,7 +161,7 @@ export function parseImport(input: string): Ticket[] {
   )
     throw new Error("Expected version 1 and 1–500 tickets.");
   const ids = new Set<string>();
-  return value.tickets.map((item, index) => {
+  const tickets = value.tickets.map((item, index) => {
     if (!isRecord(item)) throw new Error(`Ticket ${index + 1} is invalid.`);
     for (const field of [
       "id",
@@ -213,6 +224,9 @@ export function parseImport(input: string): Ticket[] {
       })),
     };
   });
+  // Validate the canonical export too: JSON.stringify can expand unpaired surrogates.
+  assertWorkspaceSize(exportTickets(tickets));
+  return tickets;
 }
 export function exportTickets(tickets: Ticket[]): string {
   return JSON.stringify({ version: 1, tickets });

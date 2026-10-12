@@ -188,3 +188,55 @@ test("the import limit counts UTF-8 bytes, including Cyrillic text", () => {
     records[0].description,
   );
 });
+
+function boundaryDocument(bytes) {
+  const ticket = {
+    ...createSeed()[0],
+    description: "Ж".repeat(1000),
+    activity: [],
+  };
+  const entry = { at, text: "H".repeat(1200) };
+  const count = Math.floor(
+    (bytes - Buffer.byteLength(exportTickets([ticket]))) /
+      (JSON.stringify(entry).length + 1),
+  );
+  ticket.activity = Array.from({ length: count }, () => ({ ...entry }));
+  const remaining = bytes - Buffer.byteLength(exportTickets([ticket]));
+  // A final bounded entry adds the exact remaining bytes; adjust the preceding one if needed.
+  const emptyEntryBytes = JSON.stringify({ at, text: "" }).length + 1;
+  if (remaining > emptyEntryBytes)
+    ticket.activity.push({ at, text: "H".repeat(remaining - emptyEntryBytes) });
+  else {
+    ticket.activity[0].text = ticket.activity[0].text.slice(
+      0,
+      -(emptyEntryBytes - remaining + 1),
+    );
+    ticket.activity.push({ at, text: "H" });
+  }
+  return exportTickets([ticket]);
+}
+
+test("accepted UTF-8 workspaces round-trip at and below the exact byte boundary", () => {
+  for (const bytes of [1_999_999, 2_000_000]) {
+    const input = boundaryDocument(bytes);
+    assert.equal(Buffer.byteLength(input), bytes);
+    const imported = parseImport(input);
+    assert.deepEqual(parseImport(exportTickets(imported)), imported);
+  }
+  assert.throws(() => parseImport(boundaryDocument(2_000_001)), /2 MB/);
+});
+
+test("canonical JSON expansion is rejected before import can create an unrestorable workspace", () => {
+  const ticket = {
+    ...createSeed()[0],
+    activity: Array.from({ length: 500 }, () => ({
+      at,
+      text: "\ud800".repeat(1200),
+    })),
+  };
+  const exported = exportTickets([ticket]);
+  const raw = exported.replaceAll("\\ud800", "\ud800");
+  assert.ok(Buffer.byteLength(raw) < 2_000_000);
+  assert.ok(Buffer.byteLength(exported) > 2_000_000);
+  assert.throws(() => parseImport(raw), /2 MB/);
+});

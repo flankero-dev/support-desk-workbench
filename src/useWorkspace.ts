@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { createSeed } from "./domain/seed.ts";
-import { exportTickets, parseImport } from "./domain/tickets.ts";
+import {
+  assertWorkspaceSize,
+  exportTickets,
+  parseImport,
+} from "./domain/tickets.ts";
 const storageKey = "support-desk-workbench:v1";
 const conflictMessage =
   "Another tab changed this workspace. Saving here is paused to protect those changes. Export this tab if needed, then reload to use the saved workspace.";
@@ -25,7 +29,25 @@ function load() {
 }
 export function useWorkspace() {
   const [initial] = useState(load);
-  const [tickets, setTickets] = useState(initial.tickets);
+  const [tickets, commitTickets] = useState(initial.tickets);
+  const currentTickets = useRef(initial.tickets);
+  function setTickets(
+    next: typeof tickets | ((current: typeof tickets) => typeof tickets),
+  ) {
+    const candidate =
+      typeof next === "function" ? next(currentTickets.current) : next;
+    if (candidate === currentTickets.current) return;
+    // Reject growth before changing memory, so every browser copy remains restorable.
+    try {
+      assertWorkspaceSize(exportTickets(candidate));
+    } catch {
+      throw new Error(
+        "This change would exceed the 2 MB workspace limit. Nothing was changed. Export a backup before replacing it with a smaller workspace.",
+      );
+    }
+    currentTickets.current = candidate;
+    commitTickets(candidate);
+  }
   const [storageWarning, setStorageWarning] = useState(initial.warning);
   const [storageConflict, setStorageConflict] = useState(false);
   const lastSaved = useRef(initial.saved);
@@ -65,8 +87,9 @@ export function useWorkspace() {
       queueMicrotask(() => setStorageWarning(""));
     } catch (error) {
       const warning =
-        error instanceof Error && error.message.startsWith("Import is limited")
-          ? "The workspace exceeds the 2 MB save limit. The previous saved copy is unchanged. Changes work in this tab only; export a backup before closing."
+        error instanceof Error &&
+        error.message.startsWith("Workspace JSON is limited")
+          ? "The workspace could not be saved within the 2 MB limit. The previous saved copy is unchanged."
           : "Browser storage is unavailable or full. Changes work in this tab only; export a backup.";
       queueMicrotask(() => setStorageWarning(warning));
     }
