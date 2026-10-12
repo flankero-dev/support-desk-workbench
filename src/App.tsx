@@ -86,7 +86,11 @@ export default function App() {
     };
   }, []);
   function changeFilters(next: Partial<Filters>) {
-    setFilters((f) => ({ ...f, ...next }));
+    setFilters((f) => {
+      const updated = { ...f, ...next };
+      if ("assignee" in next && !next.assigneeIsExact) delete updated.assigneeIsExact;
+      return updated;
+    });
     setPage(1);
     setSelected([]);
   }
@@ -326,7 +330,9 @@ export default function App() {
           assignees={assignees}
           onClose={() => {
             setActiveId(null);
-            openButtons.current.get(active.id)?.focus();
+            const trigger = openButtons.current.get(active.id);
+            if (trigger) trigger.focus();
+            else searchRef.current?.focus();
           }}
           onUpdate={(changes) =>
             setTickets((ts) =>

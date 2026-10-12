@@ -592,9 +592,15 @@ dialog::backdrop {
 .dialog-header button {
   border: 0;
   font-size: 12px;
+  flex-shrink: 0;
+}
+.dialog-header .mono {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .dialog-body {
   padding: 24px;
+  overflow-wrap: anywhere;
 }
 .dialog-body h2 {
   font-size: 23px;
@@ -612,7 +618,7 @@ dialog::backdrop {
 }
 .detail-fields {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   padding: 20px 0;
   border-top: 1px solid #e8ede6;
@@ -621,6 +627,7 @@ dialog::backdrop {
 }
 .detail-fields label select {
   font-size: 12px;
+  width: 100%;
 }
 .activity {
   list-style: none;
@@ -838,7 +845,7 @@ dialog::backdrop {
     justify-content: space-between;
   }
   .detail-fields {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .dialog-body {
     padding: 20px;

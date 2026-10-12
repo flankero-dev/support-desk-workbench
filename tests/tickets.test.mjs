@@ -139,3 +139,28 @@ test("import caps payload size and number of tickets", () => {
     /1–500/,
   );
 });
+
+test("maximum imported assignee length survives URL filters", () => {
+  const assignee = "А".repeat(200);
+  const imported = parseImport(exportTickets([{ ...tickets[0], assignee }]));
+  const filters = { ...defaultFilters, assignee };
+  assert.deepEqual(readFilters(writeFilters(filters)), filters);
+  assert.equal(filterTickets(imported, readFilters(writeFilters(filters))).length, 1);
+});
+
+test("an imported assignee named All remains distinct from Anyone", () => {
+  const filters = { ...defaultFilters, assignee: "All", assigneeIsExact: true };
+  const imported = [{ ...tickets[0], assignee: "All" }, tickets[1]];
+  assert.deepEqual(readFilters(writeFilters(filters)), filters);
+  assert.equal(filterTickets(imported, filters).length, 1);
+  assert.equal(filterTickets(imported, defaultFilters).length, 2);
+});
+
+test("imported history can grow beyond 500 entries and still reload", () => {
+  const activity = Array.from({ length: 500 }, () => ({ at, text: "Imported history" }));
+  const imported = parseImport(exportTickets([{ ...tickets[0], activity }]));
+  const updated = addNote(imported, tickets[0].id, "Next note", at);
+  const reloaded = parseImport(exportTickets(updated));
+  assert.equal(reloaded[0].activity.length, 501);
+  assert.equal(reloaded[0].activity.at(-1).text, "Note: Next note");
+});
