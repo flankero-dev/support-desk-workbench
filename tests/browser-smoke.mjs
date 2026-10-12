@@ -47,7 +47,7 @@ try {
   await page.getByRole("button", { name: "Apply status", exact: true }).click();
   assert.match(
     await page.locator(".announcement").innerText(),
-    /No changes: all 1 selected requests are already Open/,
+    /No changes: the selected request is already Open/,
   );
   await page.getByLabel("Select SD-1042", { exact: true }).check();
   await page.getByLabel("Select SD-1041", { exact: true }).check();
