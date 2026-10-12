@@ -70,4 +70,4 @@ Tests use Node's built-in runner. Browser checks use the production build and co
 - Imports replace the queue after validation. Limits: 500 requests and 2 million UTF-8 bytes. Up to eight saved views are separate browser preferences.
 - Storage conflicts pause saving in the stale tab. Export its unsaved edits if needed, then reload the saved workspace; changes are not merged automatically.
 - The SQLite server binds to loopback and has one workspace. It is a local reference implementation, without user accounts or multi-tenant authorization.
-- Activity is editable local history. This project does not claim a production support integration or a certified accessibility audit.
+- The UI appends activity entries; JSON import can replace their content. History is local data, not a tamper-proof audit trail. This project does not claim a production support integration or a certified accessibility audit.
