@@ -48,7 +48,11 @@ export function writeFilters(filters: Filters): string {
   const params = new URLSearchParams();
   if (filters.query) params.set("q", filters.query);
   for (const key of ["status", "priority", "assignee"] as const)
-    if (filters[key] !== "All" || (key === "assignee" && filters.assigneeIsExact)) params.set(key, filters[key]);
+    if (
+      filters[key] !== "All" ||
+      (key === "assignee" && filters.assigneeIsExact)
+    )
+      params.set(key, filters[key]);
   if (filters.sort !== "priority") params.set("sort", filters.sort);
   return params.toString() ? `?${params}` : "";
 }
@@ -61,7 +65,8 @@ export function filterTickets(tickets: Ticket[], filters: Filters): Ticket[] {
           `${t.id} ${t.title} ${t.customer}`.toLowerCase().includes(query)) &&
         (filters.status === "All" || t.status === filters.status) &&
         (filters.priority === "All" || t.priority === filters.priority) &&
-        ((filters.assignee === "All" && !filters.assigneeIsExact) || t.assignee === filters.assignee),
+        ((filters.assignee === "All" && !filters.assigneeIsExact) ||
+          t.assignee === filters.assignee),
     )
     .sort((a, b) => {
       if (filters.sort === "priority") {
@@ -125,7 +130,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 export function parseImport(input: string): Ticket[] {
-  if (input.length > 2_000_000 || new TextEncoder().encode(input).byteLength > 2_000_000)
+  if (
+    input.length > 2_000_000 ||
+    new TextEncoder().encode(input).byteLength > 2_000_000
+  )
     throw new Error("Import is limited to 2 MB of JSON.");
   let value: unknown;
   try {

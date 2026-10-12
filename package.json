@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "test": "node --test tests/*.test.mjs",
     "test:browser": "node tests/browser-smoke.mjs",
-    "start": "node server/start.ts"
+    "start": "node server/start.ts",
+    "format": "prettier --write src tests index.html README.md \"*.json\" \"*.js\" server \"*.ts\" \"docs/*.md\" .github/workflows",
+    "format:check": "prettier --check src tests index.html README.md \"*.json\" \"*.js\" server \"*.ts\" \"docs/*.md\" .github/workflows"
   },
   "dependencies": {
     "react": "^19.2.6",
@@ -27,6 +29,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
     "playwright": "^1.58.2",
+    "prettier": "3.9.10",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
     "vite": "^8.0.12"

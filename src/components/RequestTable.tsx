@@ -15,7 +15,12 @@ export function RequestTable({
   onOpen: (id: string) => void;
 }) {
   return (
-    <div className="table-scroll" role="region" aria-label="Request table" tabIndex={0}>
+    <div
+      className="table-scroll"
+      role="region"
+      aria-label="Request table"
+      tabIndex={0}
+    >
       <table>
         <caption className="sr-only">
           Filtered customer requests. Open a request to view details and update
@@ -29,8 +34,10 @@ export function RequestTable({
                 aria-label="Select visible requests"
                 disabled={!visible.length}
                 ref={(input) => {
-                  if (input) input.indeterminate = visible.some((t) => selected.includes(t.id)) &&
-                    !visible.every((t) => selected.includes(t.id));
+                  if (input)
+                    input.indeterminate =
+                      visible.some((t) => selected.includes(t.id)) &&
+                      !visible.every((t) => selected.includes(t.id));
                 }}
                 checked={
                   visible.length > 0 &&
