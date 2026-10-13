@@ -28,6 +28,30 @@ try {
     1,
   );
   assert.equal(await page.locator("tbody tr").count(), 8);
+  // Sidebar counts are global; All statuses clears only the status filter.
+  const allStatuses = page.getByRole("button", {
+    name: "All statuses 18",
+    exact: true,
+  });
+  assert.equal(await allStatuses.isVisible(), true);
+  await page.getByLabel(/^Priority/).selectOption("High");
+  await page.getByLabel(/^Assignee/).selectOption("Sam");
+  await page.getByLabel(/^Status/).selectOption("Waiting");
+  await allStatuses.focus();
+  await page.keyboard.press("Enter");
+  assert.equal(await page.getByLabel(/^Status/).inputValue(), "All");
+  assert.equal(await page.getByLabel(/^Priority/).inputValue(), "High");
+  assert.equal(await page.getByLabel(/^Assignee/).inputValue(), "Sam");
+  assert.equal(await page.locator("tbody tr").count(), 2);
+  assert.equal(new URL(page.url()).searchParams.get("status"), null);
+  assert.equal(new URL(page.url()).searchParams.get("priority"), "High");
+  assert.equal(new URL(page.url()).searchParams.get("assignee"), "Sam");
+  await page.getByRole("button", { name: "Open 8", exact: true }).click();
+  assert.equal(await page.locator("tbody tr").count(), 1);
+  assert.equal(await page.getByLabel(/^Priority/).inputValue(), "High");
+  await allStatuses.click();
+  await page.getByRole("button", { name: "Clear", exact: true }).click();
+  assert.equal(await page.locator("tbody tr").count(), 8);
   // A first visit must explain preferences without an empty select or dead Remove button.
   assert.equal(
     await page.getByText("No saved views yet", { exact: true }).isVisible(),
