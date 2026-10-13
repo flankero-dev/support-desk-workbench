@@ -26,7 +26,7 @@ On narrow screens the table scrolls within the queue. Sidebar status filters pre
 | Preserve the complete view in a bookmark        | [Queue state](src/App.tsx), [saved views](src/domain/views.ts)               | [Duplicate views and validation](tests/views.test.mjs)                                               |
 | Protect stored edits when another tab writes    | [Workspace persistence](src/useWorkspace.ts)                                 | [Two-tab conflict and blocked-storage scenarios](tests/browser-smoke.mjs)                            |
 | Validate a replacement before applying it       | [Import dialog](src/components/ImportDialog.tsx)                             | Invalid JSON leaves the current workspace intact                                                     |
-| Provide a real optional HTTP/SQL boundary       | [Loopback server](server/app.ts)                                             | [Restart persistence and concurrent revision updates](tests/server-api.test.mjs)                     |
+| Provide a real optional HTTP/SQL boundary       | [Loopback server](server/app.ts), [relational storage](server/storage.ts)    | [Migration, restart, concurrent writes and rollback](tests/server-api.test.mjs)                      |
 | Preserve keyboard navigation after editing      | [Ticket dialog](src/components/TicketDialog.tsx), [queue state](src/App.tsx) | Escape, focus restoration and filtered-out requests in browser smoke                                 |
 
 The regression suite includes long imported names, an assignee literally named `All`, histories exceeding 500 entries and an attempted edit at the JSON size limit. These are examples of data-contract and interaction failures found during browser review.
@@ -51,6 +51,8 @@ npm run start
 Server snapshot is enabled after the local API responds with a valid JSON revision. Vite development and preview servers leave it disabled; the public demo hides it.
 
 Choose **Server snapshot → Refresh server copy** to compare the current server revision. Saving uses an ETag and `If-Match`; a stale revision returns HTTP 412. Replacing either copy is an explicit action. The database is `data/workspace.sqlite`, excluded from git.
+
+Requests and activity entries live in related SQL tables. Saving replaces them in one transaction together with the revision. Existing JSON-based databases migrate automatically on first startup, retaining their data and revision. Back up the database before upgrading; invalid legacy data or an unsupported schema stops startup without reseeding. The old server cannot read the migrated schema.
 
 ## Verify
 

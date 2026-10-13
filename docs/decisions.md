@@ -38,13 +38,17 @@ Evidence: [persistence hook](../src/useWorkspace.ts), [two-tab browser scenarios
 
 Long imported strings need their own layout constraints: the grid uses `minmax(0, 1fr)`, selects fit their columns and text wraps inside the dialog. Hiding page overflow would conceal the problem rather than make the content readable.
 
-## Local SQLite snapshots demonstrate concurrency
+## Relational storage keeps snapshots consistent
 
-The optional server stores one workspace and revision. GET returns an ETag. PUT requires the revision through `If-Match`, and a conditional SQL UPDATE increments it only when the expected revision still matches. A stale client receives HTTP 412.
+The optional server stores requests in `tickets`, history in `activities`, and the revision in a singleton `workspace` row. Foreign keys cascade deleted requests to their history. SQL constraints enforce status and priority values, unique request positions and unique history positions within each request. Explicit positions preserve imported order; timestamps need not be unique.
 
-This is a real persistence boundary tested with HTTP requests and temporary SQLite files, including restarting the server and two writes against one revision. The loopback server remains separate from the static demo and has no shared-service authentication model.
+The HTTP contract remains a versioned JSON snapshot. GET reads the revision and related rows in one transaction. PUT uses `If-Match`: a conditional revision update and replacement of all requests and history share a `BEGIN IMMEDIATE` transaction. A stale client receives HTTP 412 without deleting any rows. The successful response is assembled inside that same transaction, so its body and ETag describe the committed write. Any failed insertion rolls the entire replacement back, including the revision.
 
-Evidence: [server](../server/app.ts), [API tests](../tests/server-api.test.mjs).
+Schema version 1 migrates the former JSON document once, retaining its revision, request order and history. Validation, table creation, data insertion and removal of the legacy table share one transaction. Invalid legacy data aborts startup and remains available for recovery; it is not overwritten by sample data. Unknown future schema versions also abort startup. Back up an existing database before upgrading: the old server cannot read the new schema.
+
+Full replacement is deliberate: the UI synchronizes a bounded workspace of at most 500 requests, not individual server records. This does not provide query pagination, authentication or a shared-service authorization model. The loopback server remains separate from the static demo.
+
+Evidence: [storage and migration](../server/storage.ts), [HTTP boundary](../server/app.ts), [restart, migration, independent connections and rollback tests](../tests/server-api.test.mjs).
 
 ## Regression examples
 

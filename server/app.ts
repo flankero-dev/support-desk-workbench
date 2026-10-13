@@ -2,31 +2,14 @@ import { createServer } from "node:http";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { readFile } from "node:fs/promises";
 import { resolve, extname } from "node:path";
-import { DatabaseSync } from "node:sqlite";
-import { createSeed } from "../src/domain/seed.ts";
-import { exportTickets, parseImport } from "../src/domain/tickets.ts";
+import { parseImport } from "../src/domain/tickets.ts";
+import type { Ticket } from "../src/domain/tickets.ts";
+import { openWorkspace } from "./storage.ts";
 export function createAppServer(
   databasePath = ":memory:",
   root = resolve("dist"),
 ) {
-  const database = new DatabaseSync(databasePath);
-  database.exec(
-    "CREATE TABLE IF NOT EXISTS workspace (id INTEGER PRIMARY KEY CHECK(id=1), revision INTEGER NOT NULL, document TEXT NOT NULL) STRICT",
-  );
-  database
-    .prepare("INSERT OR IGNORE INTO workspace VALUES (1, 1, ?)")
-    .run(exportTickets(createSeed()));
-  const read = database.prepare(
-    "SELECT revision, document FROM workspace WHERE id=1",
-  );
-  const save = database.prepare(
-    "UPDATE workspace SET document=?, revision=revision+1 WHERE id=1 AND revision=?",
-  );
-  const current = () =>
-    read.get() as {
-      revision: number;
-      document: string;
-    };
+  const workspace = openWorkspace(databasePath);
   const json = (
     response: ServerResponse,
     code: number,
@@ -62,7 +45,7 @@ export function createAppServer(
       const pathname = new URL(request.url ?? "/", "http://localhost").pathname;
       if (pathname === "/api/workspace") {
         if (request.method === "GET") {
-          const snapshot = current();
+          const snapshot = workspace.current();
           json(
             response,
             200,
@@ -110,9 +93,9 @@ export function createAppServer(
           });
           return;
         }
-        let document: string;
+        let tickets: Ticket[];
         try {
-          document = exportTickets(parseImport(await body(request)));
+          tickets = parseImport(await body(request));
         } catch (error) {
           const detail =
             error instanceof Error ? error.message : "Invalid workspace.";
@@ -121,16 +104,15 @@ export function createAppServer(
           });
           return;
         }
-        // One conditional SQL statement is atomic across concurrent writers.
-        const result = save.run(document, revision);
-        if (!result.changes) {
+        // Revision and related rows commit together across database connections.
+        const snapshot = workspace.save(tickets, revision);
+        if (!snapshot) {
           json(response, 412, {
             error:
               "The server copy changed. Refresh it before deciding what to save.",
           });
           return;
         }
-        const snapshot = current();
         json(
           response,
           200,
@@ -173,6 +155,6 @@ export function createAppServer(
     }
   });
   server.requestTimeout = 15000;
-  server.on("close", () => database.close());
+  server.on("close", () => workspace.close());
   return server;
 }
