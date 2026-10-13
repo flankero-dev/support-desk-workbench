@@ -153,7 +153,7 @@ export default function App() {
           className={filters.status === "All" ? "nav active" : "nav"}
           onClick={() => changeFilters({ status: "All" })}
         >
-          <span>All requests</span>
+          <span>All statuses</span>
           <span>{tickets.length}</span>
         </button>
         <button
