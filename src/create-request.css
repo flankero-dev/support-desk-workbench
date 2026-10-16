@@ -12,3 +12,10 @@
 .create-request :is(input, select, textarea) {
   border-color: #82948a;
 }
+
+/* Keep the existing outline width/offset and keyboard visibility, using the
+   error border's color when an invalid field has focus. */
+.create-request
+  :is(input, select, textarea)[aria-invalid="true"]:focus-visible {
+  outline-color: #9b4335;
+}

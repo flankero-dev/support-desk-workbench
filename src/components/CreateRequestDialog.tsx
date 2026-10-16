@@ -103,7 +103,7 @@ export function CreateRequestDialog({
               id="created-heading"
               ref={resultRef}
               tabIndex={-1}
-              className="tw:text-[23px] tw:leading-[1.3] tw:tracking-[-0.4px]"
+              className="tw:text-[16px] tw:leading-[1.5]"
             >
               Request created
             </h2>
@@ -111,12 +111,14 @@ export function CreateRequestDialog({
               Saved in this browser. New requests start as Open.
             </p>
             <div className="tw:rounded-md tw:border tw:border-solid tw:border-[#dce3db] tw:bg-[#f5f7f5] tw:p-[16px]">
-              <p className="mono">{created.ticket.id}</p>
-              <p className="tw:mt-[8px] tw:font-semibold">
+              <h3 className="tw:m-0 tw:text-[23px] tw:font-semibold tw:leading-[1.3] tw:tracking-[-0.4px]">
                 {created.ticket.title}
-              </p>
+              </h3>
               <p className="tw:mt-[4px] tw:text-[13px] tw:text-[#58695e]">
                 {created.ticket.customer} · {created.ticket.priority}
+              </p>
+              <p className="tw:mt-[12px] tw:text-[12px] tw:text-[#58695e]">
+                Request ID: <span className="mono">{created.ticket.id}</span>
               </p>
             </div>
             <p>

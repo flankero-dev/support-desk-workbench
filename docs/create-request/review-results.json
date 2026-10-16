@@ -18,7 +18,9 @@
     {
       "state": "desktop success",
       "violations": [],
-      "incomplete": []
+      "incomplete": [
+        "color-contrast"
+      ]
     },
     {
       "state": "mobile default",
@@ -27,6 +29,20 @@
     },
     {
       "state": "mobile invalid",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "state": "polish 390 long-title success",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "state": "polish 1440 long-title success",
       "violations": [],
       "incomplete": [
         "color-contrast"
@@ -296,12 +312,7 @@
           "textRatio": 13.266890495436922
         },
         {
-          "tag": "P",
-          "text": "REQ-fa795bf2-e09c-4612-bb68-94918de2b1ad",
-          "textRatio": 4.859231016510143
-        },
-        {
-          "tag": "P",
+          "tag": "H3",
           "text": "<img src=x onerror=\"window.injected=true\">",
           "textRatio": 12.322613650434448
         },
@@ -309,6 +320,16 @@
           "tag": "P",
           "text": "Customer · Normal",
           "textRatio": 5.422357696790662
+        },
+        {
+          "tag": "P",
+          "text": "Request ID: REQ-8fd88776-3978-4ca8-a184-4d496c7c0ce6",
+          "textRatio": 5.422357696790662
+        },
+        {
+          "tag": "SPAN",
+          "text": "REQ-8fd88776-3978-4ca8-a184-4d496c7c0ce6",
+          "textRatio": 4.859231016510143
         },
         {
           "tag": "P",
@@ -572,6 +593,110 @@
           "textRatio": 9.40230837163695
         }
       ]
+    },
+    {
+      "state": "polish 390 long-title success",
+      "minimumText": 4.859231016510143,
+      "minimumControlBorder": null,
+      "measured": [
+        {
+          "tag": "H2",
+          "text": "Request created",
+          "textRatio": 13.266890495436922
+        },
+        {
+          "tag": "P",
+          "text": "Saved in this browser. New requests start as Open.",
+          "textRatio": 13.266890495436922
+        },
+        {
+          "tag": "H3",
+          "text": "Довга назва заявки Довга назва заявки Довга назва заявки Довга назва з",
+          "textRatio": 12.322613650434448
+        },
+        {
+          "tag": "P",
+          "text": "Customer · Normal",
+          "textRatio": 5.422357696790662
+        },
+        {
+          "tag": "P",
+          "text": "Request ID: REQ-c1653e91-da2c-485d-8a76-5ac4e9fce56d",
+          "textRatio": 5.422357696790662
+        },
+        {
+          "tag": "SPAN",
+          "text": "REQ-c1653e91-da2c-485d-8a76-5ac4e9fce56d",
+          "textRatio": 4.859231016510143
+        },
+        {
+          "tag": "P",
+          "text": "Your queue is on the page containing this request, with the current so",
+          "textRatio": 13.266890495436922
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Back to queue",
+          "textRatio": 9.573371520139666
+        },
+        {
+          "tag": "BUTTON",
+          "text": "View request",
+          "textRatio": 9.40230837163695
+        }
+      ]
+    },
+    {
+      "state": "polish 1440 long-title success",
+      "minimumText": 4.859231016510143,
+      "minimumControlBorder": null,
+      "measured": [
+        {
+          "tag": "H2",
+          "text": "Request created",
+          "textRatio": 13.266890495436922
+        },
+        {
+          "tag": "P",
+          "text": "Saved in this browser. New requests start as Open.",
+          "textRatio": 13.266890495436922
+        },
+        {
+          "tag": "H3",
+          "text": "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+          "textRatio": 12.322613650434448
+        },
+        {
+          "tag": "P",
+          "text": "Customer · Normal",
+          "textRatio": 5.422357696790662
+        },
+        {
+          "tag": "P",
+          "text": "Request ID: REQ-a8cda6b3-4620-47a5-9095-7696c438860e",
+          "textRatio": 5.422357696790662
+        },
+        {
+          "tag": "SPAN",
+          "text": "REQ-a8cda6b3-4620-47a5-9095-7696c438860e",
+          "textRatio": 4.859231016510143
+        },
+        {
+          "tag": "P",
+          "text": "Your queue is on the page containing this request, with the current so",
+          "textRatio": 13.266890495436922
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Back to queue",
+          "textRatio": 10.56097848234087
+        },
+        {
+          "tag": "BUTTON",
+          "text": "View request",
+          "textRatio": 9.40230837163695
+        }
+      ]
     }
   ],
   "baselineCSS": {
@@ -773,6 +898,128 @@
     {
       "name": "static-host creation and reload with zero API requests",
       "status": "VERIFIED"
+    }
+  ],
+  "polish": [
+    {
+      "width": 320,
+      "status": "VERIFIED",
+      "focusStyle": {
+        "active": true,
+        "visible": true,
+        "border": "rgb(155, 67, 53)",
+        "outline": "rgb(155, 67, 53)",
+        "width": "3px",
+        "offset": "3px",
+        "style": "solid"
+      },
+      "hierarchy": {
+        "titleSize": 23,
+        "idSize": 12,
+        "weight": 600,
+        "titleBeforeId": true,
+        "overflow": false,
+        "titleOverflow": false
+      },
+      "fullIdPreserved": true,
+      "reload": true,
+      "keyboardViewRequest": true
+    },
+    {
+      "width": 390,
+      "status": "VERIFIED",
+      "focusStyle": {
+        "active": true,
+        "visible": true,
+        "border": "rgb(155, 67, 53)",
+        "outline": "rgb(155, 67, 53)",
+        "width": "3px",
+        "offset": "3px",
+        "style": "solid"
+      },
+      "hierarchy": {
+        "titleSize": 23,
+        "idSize": 12,
+        "weight": 600,
+        "titleBeforeId": true,
+        "overflow": false,
+        "titleOverflow": false
+      },
+      "fullIdPreserved": true,
+      "reload": true,
+      "keyboardViewRequest": true
+    },
+    {
+      "width": 639,
+      "status": "VERIFIED",
+      "focusStyle": {
+        "active": true,
+        "visible": true,
+        "border": "rgb(155, 67, 53)",
+        "outline": "rgb(155, 67, 53)",
+        "width": "3px",
+        "offset": "3px",
+        "style": "solid"
+      },
+      "hierarchy": {
+        "titleSize": 23,
+        "idSize": 12,
+        "weight": 600,
+        "titleBeforeId": true,
+        "overflow": false,
+        "titleOverflow": false
+      },
+      "fullIdPreserved": true,
+      "reload": true,
+      "keyboardViewRequest": true
+    },
+    {
+      "width": 640,
+      "status": "VERIFIED",
+      "focusStyle": {
+        "active": true,
+        "visible": true,
+        "border": "rgb(155, 67, 53)",
+        "outline": "rgb(155, 67, 53)",
+        "width": "3px",
+        "offset": "3px",
+        "style": "solid"
+      },
+      "hierarchy": {
+        "titleSize": 23,
+        "idSize": 12,
+        "weight": 600,
+        "titleBeforeId": true,
+        "overflow": false,
+        "titleOverflow": false
+      },
+      "fullIdPreserved": true,
+      "reload": true,
+      "keyboardViewRequest": true
+    },
+    {
+      "width": 1440,
+      "status": "VERIFIED",
+      "focusStyle": {
+        "active": true,
+        "visible": true,
+        "border": "rgb(155, 67, 53)",
+        "outline": "rgb(155, 67, 53)",
+        "width": "3px",
+        "offset": "3px",
+        "style": "solid"
+      },
+      "hierarchy": {
+        "titleSize": 23,
+        "idSize": 12,
+        "weight": 600,
+        "titleBeforeId": true,
+        "overflow": false,
+        "titleOverflow": false
+      },
+      "fullIdPreserved": true,
+      "reload": true,
+      "keyboardViewRequest": true
     }
   ]
 }

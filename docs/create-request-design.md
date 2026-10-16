@@ -20,7 +20,7 @@ One action is added to the queue heading: **New request**. It opens a native mod
 | Control boundary | `#82948a`, approximately 3.21:1 against white; scoped to this dialog                                                                                         |
 | Invalid          | `#9b4335` border and 13 px error text; persistent label, `aria-invalid`, linked error description                                                            |
 | Primary action   | Existing `.primary`: `#174f42` background with white text; existing hover/focus treatment                                                                    |
-| Focus            | Existing 3 px `#276752` outline, 3 px offset; focused elements scroll into view                                                                              |
+| Focus            | 3 px outline, 3 px offset: `#276752` normally, `#9b4335` on invalid fields; focused elements scroll into view                                                |
 | Actions          | 12 px gap; 44 px minimum buttons. Mobile actions remain within the dialog's scrollable content                                                               |
 | Footer           | 24 px top margin, 16 px top padding, existing divider color; browser-only persistence notice                                                                 |
 
@@ -44,7 +44,7 @@ ID, status Open, timestamps and the initial history entry are generated, rather 
 - **Default:** title receives initial focus; labels and required marks stay visible. Cancel, Close or Escape discard this unsubmitted draft. Reopening starts clean.
 - **Invalid:** submit shows specific messages and focuses the first invalid field. Errors update as that field is corrected. Enter in a text field submits; Enter in description inserts a newline.
 - **Persistence error:** the form stays open and retains all values. Failed storage, duplicate ID, capacity and another-tab conflicts produce actionable text. No success message or in-memory insert is committed for a rejected creation.
-- **Success:** focus moves to the confirmation heading. It shows the real ID/title and offers View request or Back to queue. Existing filters and sort are not silently cleared; a hidden result is explained. A matching result's page is selected using its actual filtered/sorted index.
+- **Success:** focus moves to the confirmation heading. The title is the primary 23 px semibold heading in the summary card; the confirmation label is 16 px. The full, selectable ID follows customer/priority as labelled 12 px secondary text. Long titles and IDs wrap without truncation. It offers View request or Back to queue. Existing filters and sort are not silently cleared; a hidden result is explained. A matching result's page is selected using its actual filtered/sorted index.
 - **Loading/disabled:** no artificial loading delay or disabled-submit state is introduced. Creation is a synchronous browser-storage operation; there is no creation request to a server. Native controls and existing unrelated disabled buttons retain their behavior.
 - Tab/Shift+Tab wrap within the modal; native modality keeps the background inert. Closing restores the New request trigger; View request opens the existing detail dialog.
 

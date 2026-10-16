@@ -37,6 +37,20 @@ The additional review pass uses the interface and production assets rather than 
 
 The unchanged browser smoke suite covers URL filters and sort, pagination, cross-page selection/bulk updates, ticket editing, notes/history, focus when an edited ticket leaves the filter, saved-view creation/apply/reload/duplicates/removal/two-tab and corrupt-storage behavior, JSON export/import/file restore, reset, long imported names, an assignee named All, large histories, size-rejected edits, local server snapshot refresh/save/load, stale revisions, unavailable Vite API and static-host controls. Creation tests additionally round-trip a created record, preserve a saved view and explain a filtered-out new request.
 
+## Limited UX polish review (16 October 2026)
+
+Only success-screen hierarchy and invalid-field focus color changed. The request title is now 23 px/600, ahead of the full labelled 12 px identifier. UUID generation, persistence, schema, import/export and request navigation are unchanged. Invalid keyboard focus uses the same red as the error border while retaining the existing solid 3 px outline and 3 px offset; valid controls retain green focus.
+
+- **VERIFIED:** all 48 unit/integration tests, strict TypeScript, ESLint, formatting, production build and all three production-browser scripts rerun successfully.
+- **VERIFIED:** separate black-box polish assertions at 320, 390, 639, 640 and 1440 px. A 200-character unbroken title and a long Ukrainian title wrap without horizontal overflow; the entire ID remains rendered, the saved record survives reload unchanged, and keyboard Tab/Enter opens the same existing detail record. Escape/reopen starts a clean form.
+- **VERIFIED:** computed invalid border/outline colors match, outline remains 3 px with 3 px offset, valid focus remains green. Seven axe scans have zero violations; minimum measured text contrast is 4.86:1. Eight existing interface selectors still match the main-branch baseline.
+- **VERIFIED:** desktop/mobile screenshots inspected, including long titles and focused errors. Existing regression coverage listed below passed again, including multi-tab, limits, import/export and API revision conflicts.
+- **UNVERIFIED:** external human review, human screen-reader sessions, Safari/Firefox and physical mobile devices. This separate review pass was performed by the implementation agent, not an independent person.
+
+[Desktop success](create-request/desktop-success.png) · [Mobile success](create-request/mobile-success.png) · [Desktop keyboard error](create-request/polish-1440-invalid.png) · [Mobile keyboard error](create-request/polish-390-invalid.png) · [Long title desktop](create-request/polish-1440-success.png) · [Long title mobile](create-request/polish-390-success.png). Machine-readable measurements are in `review-results.json` under `polish`.
+
+GitHub Actions must also pass for the new remote HEAD; the PR description records that exact SHA and run links after completion. No merge or deployment is authorized by this review.
+
 ## Findings corrected during review
 
 1. Initial browser focus selected Close instead of Title; title is now focused after showModal.
