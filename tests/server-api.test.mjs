@@ -7,6 +7,7 @@ import { DatabaseSync } from "node:sqlite";
 import { createAppServer } from "../server/app.ts";
 import { createSeed } from "../src/domain/seed.ts";
 import { exportTickets } from "../src/domain/tickets.ts";
+import { appendRequest, emptyRequest } from "../src/domain/createRequest.ts";
 async function start(database) {
   const server = createAppServer(database);
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -26,6 +27,57 @@ const put = (url, etag, body = exportTickets(createSeed()), origin) =>
     },
     body,
   });
+
+test("a created request survives SQLite restart and stale writers cannot remove it", async () => {
+  await withDatabase(async (path) => {
+    let app = await start(path);
+    const at = "2026-10-16T16:00:00.000Z";
+    const created = appendRequest(
+      createSeed(),
+      {
+        ...emptyRequest,
+        title: "Created through UI contract",
+        customer: "Марія",
+        category: "Orders",
+        description: "Keep this record",
+      },
+      at,
+      "REQ-api",
+    );
+    try {
+      const before = await fetch(app.url);
+      const revision = before.headers.get("ETag");
+      const saved = await put(
+        app.url,
+        revision,
+        exportTickets(created.tickets),
+      );
+      assert.equal(saved.status, 200);
+      assert.equal(saved.headers.get("ETag"), '"2"');
+      const stale = await put(app.url, revision);
+      assert.equal(stale.status, 412);
+      const duplicate = await put(
+        app.url,
+        '"2"',
+        exportTickets([...created.tickets, created.ticket]),
+      );
+      assert.equal(duplicate.status, 400);
+      const unchanged = await fetch(app.url);
+      assert.equal(unchanged.headers.get("ETag"), '"2"');
+      assert.deepEqual((await unchanged.json()).tickets.at(-1), created.ticket);
+    } finally {
+      await close(app.server);
+    }
+    app = await start(path);
+    try {
+      const restored = await fetch(app.url);
+      assert.equal(restored.headers.get("ETag"), '"2"');
+      assert.deepEqual((await restored.json()).tickets.at(-1), created.ticket);
+    } finally {
+      await close(app.server);
+    }
+  });
+});
 
 async function withDatabase(action) {
   const directory = await mkdtemp(join(tmpdir(), "support-relational-"));

@@ -1,0 +1,159 @@
+{
+  "results": [
+    {
+      "name": "keyboard, negative validation, successful save, Enter and focus restoration",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "current filters, saved view and sort survive creation; reset and JSON round-trip",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "quota error preserves all form fields and memory, then retry creates only once",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "another tab's creation is protected and unsaved draft survives conflict",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "immediate storage recheck works even without a delivered storage event",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "UUID collision never overwrites the existing record",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "500-record cap preserves the existing workspace and draft",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "desktop/mobile layout, minimum targets and modal keyboard containment",
+      "status": "VERIFIED"
+    }
+  ],
+  "measurements": [
+    {
+      "viewport": 320,
+      "width": 288,
+      "overflow": false,
+      "pageOverflow": false,
+      "fieldHeights": [
+        44,
+        44,
+        44,
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "columns": "246px"
+    },
+    {
+      "viewport": 390,
+      "width": 358,
+      "overflow": false,
+      "pageOverflow": false,
+      "fieldHeights": [
+        44,
+        44,
+        44,
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "columns": "316px"
+    },
+    {
+      "viewport": 639,
+      "width": 600,
+      "overflow": false,
+      "pageOverflow": false,
+      "fieldHeights": [
+        44,
+        44,
+        44,
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "columns": "558px"
+    },
+    {
+      "viewport": 640,
+      "width": 600,
+      "overflow": false,
+      "pageOverflow": false,
+      "fieldHeights": [
+        44,
+        44,
+        44,
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "columns": "267px 267px"
+    },
+    {
+      "viewport": 768,
+      "width": 600,
+      "overflow": false,
+      "pageOverflow": false,
+      "fieldHeights": [
+        44,
+        44,
+        44,
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "columns": "267px 267px"
+    },
+    {
+      "viewport": 1024,
+      "width": 600,
+      "overflow": false,
+      "pageOverflow": false,
+      "fieldHeights": [
+        44,
+        44,
+        44,
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "columns": "267px 267px"
+    },
+    {
+      "viewport": 1440,
+      "width": 600,
+      "overflow": false,
+      "pageOverflow": false,
+      "fieldHeights": [
+        44,
+        44,
+        44,
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "columns": "267px 267px"
+    }
+  ],
+  "errors": [],
+  "browser": "153.0.8010.0"
+}
