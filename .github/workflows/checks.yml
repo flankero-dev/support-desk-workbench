@@ -24,4 +24,7 @@ jobs:
         if: always()
         with:
           name: browser-screenshots
-          path: docs/*.png
+          path: |
+            docs/*.png
+            docs/create-request/*.png
+            docs/create-request/*results.json

@@ -1,0 +1,14 @@
+/* Utilities only: no Preflight, font reset or global element rules.
+   Unlayered, prefixed utilities can override existing unlayered element styles
+   without !important or changing the rest of the application's cascade. */
+@import "tailwindcss/theme.css" layer(theme) prefix(tw);
+@import "tailwindcss/utilities.css" source(none) prefix(tw);
+@source "./components/CreateRequestDialog.tsx";
+@source "./App.tsx";
+
+/* A scoped boundary with >=3:1 contrast against white. This also matches the
+   specificity of the legacy input:not([type="checkbox"]) rule; the invalid
+   utility's attribute selector remains more specific. */
+.create-request :is(input, select, textarea) {
+  border-color: #82948a;
+}

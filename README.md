@@ -1,6 +1,6 @@
 # Support Desk Workbench
 
-A support queue for triaging requests, recording internal notes and keeping work between visits. Built with React, TypeScript and Vite; an optional local Node.js server adds SQLite snapshots.
+A support queue for creating and triaging requests, recording internal notes and keeping work between visits. Built with React, TypeScript and Vite; an optional local Node.js server adds SQLite snapshots. The create-request flow uses scoped Tailwind CSS utilities without Preflight.
 
 [Live demo](https://flankero-dev.github.io/support-desk-workbench/) · [Checks](https://github.com/flankero-dev/support-desk-workbench/actions/workflows/checks.yml) · [Engineering decisions](docs/decisions.md)
 
@@ -9,6 +9,8 @@ The demo uses fictional customers and browser storage. It opens directly into a 
 ![Request queue with filters, saved views and pagination](docs/workspace.png)
 
 ## Review it in two minutes
+
+Choose **New request** in the queue. Submit an empty form to see field errors, then enter a title, customer, category and description. New requests start as Open, with Normal priority and no assignee. Success appears only after browser storage accepts the write. Current filters and sorting stay intact; the confirmation explains if they hide the new request and offers **View request**.
 
 1. Search for **Maya** and open the checkout request. Change its status, add a note, then close it with **Escape**.
 2. Reload. The URL restores the search; the edited request and note remain saved.
@@ -66,6 +68,8 @@ npm run test:browser
 ```
 
 Tests use Node's built-in runner. Browser checks use the production build and cover filtering, pagination, saved views, editing, import/export, reset, keyboard focus, storage conflicts and server snapshots. CI runs these checks; the Pages deployment also checks the build before publishing. Browser screenshots are available as CI artifacts.
+
+Create-request design and review: [design specification](docs/create-request-design.md), [QA evidence and limitations](docs/create-request-qa.md). No Figma file or Figma handoff was produced. Additional browser checks cover field validation, ID collisions, record/UTF-8 limits, failed persistence, multi-tab conflicts, responsive layout and axe accessibility scans. To reproduce the optional pre-change CSS comparison, build the base revision separately and set `BASELINE_DIST=/path/to/base/dist` when running `node tests/create-request-review.mjs`.
 
 ## Boundaries
 

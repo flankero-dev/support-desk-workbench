@@ -18,7 +18,10 @@ import { useWorkspace } from "./useWorkspace.ts";
 import { TicketDialog } from "./components/TicketDialog.tsx";
 import { ImportDialog } from "./components/ImportDialog.tsx";
 import { ServerSnapshotDialog } from "./components/ServerSnapshotDialog.tsx";
+import { CreateRequestDialog } from "./components/CreateRequestDialog.tsx";
+import { appendRequest } from "./domain/createRequest.ts";
 import "./styles.css";
+import "./create-request.css";
 
 const pageSize = 8;
 export default function App() {
@@ -31,6 +34,8 @@ export default function App() {
   const [selected, setSelected] = useState<string[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const newRequestRef = useRef<HTMLButtonElement>(null);
   const [serverSnapshotOpen, setServerSnapshotOpen] = useState(false);
   const [bulkStatus, setBulkStatus] = useState<Status>("In progress");
   const [message, setMessage] = useState("");
@@ -269,16 +274,25 @@ export default function App() {
             <h2 id="queue-heading">
               Requests <span>{results.length}</span>
             </h2>
-            <label className="sort-label">
-              Sort by
-              <select
-                value={filters.sort}
-                onChange={(e) => changeFilters({ sort: e.target.value })}
+            <div className="tw:flex tw:flex-wrap tw:items-center tw:gap-3 tw:max-[480px]:w-full">
+              <label className="sort-label tw:max-[480px]:min-w-0 tw:max-[480px]:flex-1">
+                Sort by
+                <select
+                  value={filters.sort}
+                  onChange={(e) => changeFilters({ sort: e.target.value })}
+                >
+                  <option value="priority">Priority first</option>
+                  <option value="newest">Newest first</option>
+                </select>
+              </label>
+              <button
+                ref={newRequestRef}
+                className="primary tw:min-h-[44px]"
+                onClick={() => setCreating(true)}
               >
-                <option value="priority">Priority first</option>
-                <option value="newest">Newest first</option>
-              </select>
-            </label>
+                New request
+              </button>
+            </div>
           </div>
           <QueueFilters
             filters={filters}
@@ -403,6 +417,35 @@ export default function App() {
           </a>
         </p>
       </main>
+      {creating && (
+        <CreateRequestDialog
+          assignees={assignees}
+          categories={Array.from(
+            new Set(tickets.map((t) => t.category)),
+          ).sort()}
+          onClose={(openId) => {
+            setCreating(false);
+            newRequestRef.current?.focus();
+            if (openId) setActiveId(openId);
+          }}
+          onCreate={(draft) => {
+            const id = `REQ-${crypto.randomUUID()}`;
+            const at = new Date().toISOString();
+            const updated = setTickets(
+              (current) => appendRequest(current, draft, at, id).tickets,
+              { requirePersistence: true },
+            );
+            const ticket = updated[updated.length - 1];
+            const matches = filterTickets(updated, filters);
+            const index = matches.findIndex((match) => match.id === ticket.id);
+            if (index >= 0) setPage(Math.floor(index / pageSize) + 1);
+            setMessage(
+              `Created ${ticket.id}. Saved in this browser.${index < 0 ? " Hidden by current search or filters." : ""}`,
+            );
+            return { ticket, matches: index >= 0 };
+          }}
+        />
+      )}
       {active && (
         <TicketDialog
           key={active.id}

@@ -31,12 +31,17 @@ export function useWorkspace() {
   const [initial] = useState(load);
   const [tickets, commitTickets] = useState(initial.tickets);
   const currentTickets = useRef(initial.tickets);
+  const [storageWarning, setStorageWarning] = useState(initial.warning);
+  const [storageConflict, setStorageConflict] = useState(false);
+  const lastSaved = useRef(initial.saved);
+  const blocked = useRef(false);
   function setTickets(
     next: typeof tickets | ((current: typeof tickets) => typeof tickets),
+    options?: { requirePersistence: boolean },
   ) {
     const candidate =
       typeof next === "function" ? next(currentTickets.current) : next;
-    if (candidate === currentTickets.current) return;
+    if (candidate === currentTickets.current) return candidate;
     // Reject growth before changing memory, so every browser copy remains restorable.
     try {
       assertWorkspaceSize(exportTickets(candidate));
@@ -45,13 +50,34 @@ export function useWorkspace() {
         "This change would exceed the 2 MB workspace limit. Nothing was changed. Export a backup before replacing it with a smaller workspace.",
       );
     }
+    if (options?.requirePersistence) {
+      // Creation must not announce success before a durable browser write.
+      // Existing editing keeps its documented in-tab fallback when storage fails.
+      if (blocked.current) throw new Error(conflictMessage);
+      try {
+        if (localStorage.getItem(storageKey) !== lastSaved.current) {
+          blocked.current = true;
+          setStorageConflict(true);
+          setStorageWarning(conflictMessage);
+          throw new Error(conflictMessage);
+        }
+        const saved = exportTickets(candidate);
+        parseImport(saved);
+        localStorage.setItem(storageKey, saved);
+        lastSaved.current = saved;
+        setStorageWarning("");
+      } catch (cause) {
+        if (blocked.current) throw cause;
+        throw new Error(
+          "The request could not be saved in this browser. Storage may be unavailable or full. Your form is unchanged; free space or export a backup before trying again.",
+          { cause },
+        );
+      }
+    }
     currentTickets.current = candidate;
     commitTickets(candidate);
+    return candidate;
   }
-  const [storageWarning, setStorageWarning] = useState(initial.warning);
-  const [storageConflict, setStorageConflict] = useState(false);
-  const lastSaved = useRef(initial.saved);
-  const blocked = useRef(false);
   useEffect(() => {
     const onStorage = (event: StorageEvent) => {
       if (
@@ -80,6 +106,7 @@ export function useWorkspace() {
         return;
       }
       const saved = exportTickets(tickets);
+      if (saved === lastSaved.current) return;
       // Keep the saved copy readable by the same importer used on reload.
       parseImport(saved);
       localStorage.setItem(storageKey, saved);

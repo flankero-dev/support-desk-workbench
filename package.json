@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "node --test tests/*.test.mjs",
-    "test:browser": "node tests/browser-smoke.mjs",
+    "test:browser": "node tests/browser-smoke.mjs && node tests/create-request.browser.mjs && node tests/create-request-review.mjs",
     "start": "node server/start.ts",
     "format": "prettier --write src tests index.html README.md \"*.json\" \"*.js\" server \"*.ts\" \"docs/*.md\" .github/workflows",
     "format:check": "prettier --check src tests index.html README.md \"*.json\" \"*.js\" server \"*.ts\" \"docs/*.md\" .github/workflows"
@@ -19,7 +19,9 @@
     "react-dom": "^19.2.6"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.1",
     "@eslint/js": "^10.0.1",
+    "@tailwindcss/vite": "^4.3.0",
     "@types/node": "^24.12.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
@@ -30,6 +32,7 @@
     "globals": "^17.6.0",
     "playwright": "^1.58.2",
     "prettier": "3.9.10",
+    "tailwindcss": "^4.3.0",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
     "vite": "^8.0.12"

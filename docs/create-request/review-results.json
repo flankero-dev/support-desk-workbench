@@ -1,0 +1,778 @@
+{
+  "browser": "153.0.8010.0",
+  "accessibility": [
+    {
+      "state": "desktop default",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "state": "desktop invalid",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "state": "desktop success",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "state": "mobile default",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "state": "mobile invalid",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    }
+  ],
+  "contrast": [
+    {
+      "state": "desktop default",
+      "minimumText": 5.015754885495116,
+      "minimumControlBorder": 3.205068171626354,
+      "measured": [
+        {
+          "tag": "H2",
+          "text": "New request",
+          "textRatio": 13.266890495436922
+        },
+        {
+          "tag": "P",
+          "text": "Add a request to this browser’s workspace. Fields marked * are require",
+          "textRatio": 5.837870749755676
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Close ×",
+          "textRatio": 10.56097848234087
+        },
+        {
+          "tag": "SPAN",
+          "text": "×",
+          "textRatio": 10.56097848234087
+        },
+        {
+          "tag": "SPAN",
+          "text": "Title *",
+          "textRatio": 5.015754885495116
+        },
+        {
+          "tag": "INPUT",
+          "text": "create-title-label",
+          "textRatio": 13.266890495436922,
+          "borderRatio": 3.205068171626354
+        },
+        {
+          "tag": "SPAN",
+          "text": "Customer *",
+          "textRatio": 5.015754885495116
+        },
+        {
+          "tag": "INPUT",
+          "text": "create-customer-label",
+          "textRatio": 13.266890495436922,
+          "borderRatio": 3.205068171626354
+        },
+        {
+          "tag": "SPAN",
+          "text": "Category *",
+          "textRatio": 5.015754885495116
+        },
+        {
+          "tag": "INPUT",
+          "text": "create-category-label",
+          "textRatio": 13.266890495436922,
+          "borderRatio": 3.205068171626354
+        },
+        {
+          "tag": "SPAN",
+          "text": "Priority",
+          "textRatio": 5.015754885495116
+        },
+        {
+          "tag": "SELECT",
+          "text": "create-priority-label",
+          "textRatio": 13.266890495436922,
+          "borderRatio": 3.205068171626354
+        },
+        {
+          "tag": "SPAN",
+          "text": "Assignee",
+          "textRatio": 5.015754885495116
+        },
+        {
+          "tag": "SELECT",
+          "text": "create-assignee-label",
+          "textRatio": 13.266890495436922,
+          "borderRatio": 3.205068171626354
+        },
+        {
+          "tag": "SPAN",
+          "text": "Description *",
+          "textRatio": 5.015754885495116
+        },
+        {
+          "tag": "TEXTAREA",
+          "text": "create-description-label",
+          "textRatio": 13.266890495436922,
+          "borderRatio": 3.205068171626354
+        },
+        {
+          "tag": "SPAN",
+          "text": "0/4000 characters",
+          "textRatio": 5.837870749755676
+        },
+        {
+          "tag": "P",
+          "text": "Status: Open · Browser only",
+          "textRatio": 5.837870749755676
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Cancel",
+          "textRatio": 10.56097848234087
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Create request",
+          "textRatio": 9.40230837163695
+        }
+      ]
+    },
+    {
+      "state": "desktop invalid",
+      "minimumText": 5.015754885495116,
+      "minimumControlBorder": 3.205068171626354,
+      "measured": [
+        {
+          "tag": "H2",
+          "text": "New request",
+          "textRatio": 13.266890495436922
+        },
+        {
+          "tag": "P",
+          "text": "Add a request to this browser’s workspace. Fields marked * are require",
+          "textRatio": 5.837870749755676
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Close ×",
+          "textRatio": 10.56097848234087
+        },
+        {
+          "tag": "SPAN",
+          "text": "×",
+          "textRatio": 10.56097848234087
+        },
+        {
+          "tag": "SPAN",
+          "text": "Title *",
+          "textRatio": 5.015754885495116
+        },
+        {
+          "tag": "INPUT",
+          "text": "create-title-label",
+          "textRatio": 13.266890495436922,
+          "borderRatio": 6.465551692567027
+        },
+        {
+          "tag": "SPAN",
+          "text": "Enter a title.",
+          "textRatio": 6.465551692567027
+        },
+        {
+          "tag": "SPAN",
+          "text": "Customer *",
+          "textRatio": 5.015754885495116
+        },
+        {
+          "tag": "INPUT",
+          "text": "create-customer-label",
+          "textRatio": 13.266890495436922,
+          "borderRatio": 6.465551692567027
+        },
+        {
+          "tag": "SPAN",
+          "text": "Enter a customer.",
+          "textRatio": 6.465551692567027
+        },
+        {
+          "tag": "SPAN",
+          "text": "Category *",
+          "textRatio": 5.015754885495116
+        },
+        {
+          "tag": "INPUT",
+          "text": "create-category-label",
+          "textRatio": 13.266890495436922,
+          "borderRatio": 6.465551692567027
+        },
+        {
+          "tag": "SPAN",
+          "text": "Enter a category.",
+          "textRatio": 6.465551692567027
+        },
+        {
+          "tag": "SPAN",
+          "text": "Priority",
+          "textRatio": 5.015754885495116
+        },
+        {
+          "tag": "SELECT",
+          "text": "create-priority-label",
+          "textRatio": 13.266890495436922,
+          "borderRatio": 3.205068171626354
+        },
+        {
+          "tag": "SPAN",
+          "text": "Assignee",
+          "textRatio": 5.015754885495116
+        },
+        {
+          "tag": "SELECT",
+          "text": "create-assignee-label",
+          "textRatio": 13.266890495436922,
+          "borderRatio": 3.205068171626354
+        },
+        {
+          "tag": "SPAN",
+          "text": "Description *",
+          "textRatio": 5.015754885495116
+        },
+        {
+          "tag": "TEXTAREA",
+          "text": "create-description-label",
+          "textRatio": 13.266890495436922,
+          "borderRatio": 6.465551692567027
+        },
+        {
+          "tag": "SPAN",
+          "text": "Enter a description.",
+          "textRatio": 6.465551692567027
+        },
+        {
+          "tag": "SPAN",
+          "text": "0/4000 characters",
+          "textRatio": 5.837870749755676
+        },
+        {
+          "tag": "P",
+          "text": "Status: Open · Browser only",
+          "textRatio": 5.837870749755676
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Cancel",
+          "textRatio": 10.56097848234087
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Create request",
+          "textRatio": 9.40230837163695
+        }
+      ]
+    },
+    {
+      "state": "desktop success",
+      "minimumText": 4.859231016510143,
+      "minimumControlBorder": null,
+      "measured": [
+        {
+          "tag": "H2",
+          "text": "Request created",
+          "textRatio": 13.266890495436922
+        },
+        {
+          "tag": "P",
+          "text": "Saved in this browser. New requests start as Open.",
+          "textRatio": 13.266890495436922
+        },
+        {
+          "tag": "P",
+          "text": "REQ-fa795bf2-e09c-4612-bb68-94918de2b1ad",
+          "textRatio": 4.859231016510143
+        },
+        {
+          "tag": "P",
+          "text": "<img src=x onerror=\"window.injected=true\">",
+          "textRatio": 12.322613650434448
+        },
+        {
+          "tag": "P",
+          "text": "Customer · Normal",
+          "textRatio": 5.422357696790662
+        },
+        {
+          "tag": "P",
+          "text": "Your queue is on the page containing this request, with the current so",
+          "textRatio": 13.266890495436922
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Back to queue",
+          "textRatio": 10.56097848234087
+        },
+        {
+          "tag": "BUTTON",
+          "text": "View request",
+          "textRatio": 9.40230837163695
+        }
+      ]
+    },
+    {
+      "state": "mobile default",
+      "minimumText": 5.015754885495116,
+      "minimumControlBorder": 3.205068171626354,
+      "measured": [
+        {
+          "tag": "H2",
+          "text": "New request",
+          "textRatio": 13.266890495436922
+        },
+        {
+          "tag": "P",
+          "text": "Add a request to this browser’s workspace. Fields marked * are require",
+          "textRatio": 5.837870749755676
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Close ×",
+          "textRatio": 10.56097848234087
+        },
+        {
+          "tag": "SPAN",
+          "text": "×",
+          "textRatio": 10.56097848234087
+        },
+        {
+          "tag": "SPAN",
+          "text": "Title *",
+          "textRatio": 5.015754885495116
+        },
+        {
+          "tag": "INPUT",
+          "text": "create-title-label",
+          "textRatio": 13.266890495436922,
+          "borderRatio": 3.205068171626354
+        },
+        {
+          "tag": "SPAN",
+          "text": "Customer *",
+          "textRatio": 5.015754885495116
+        },
+        {
+          "tag": "INPUT",
+          "text": "create-customer-label",
+          "textRatio": 13.266890495436922,
+          "borderRatio": 3.205068171626354
+        },
+        {
+          "tag": "SPAN",
+          "text": "Category *",
+          "textRatio": 5.015754885495116
+        },
+        {
+          "tag": "INPUT",
+          "text": "create-category-label",
+          "textRatio": 13.266890495436922,
+          "borderRatio": 3.205068171626354
+        },
+        {
+          "tag": "SPAN",
+          "text": "Priority",
+          "textRatio": 5.015754885495116
+        },
+        {
+          "tag": "SELECT",
+          "text": "create-priority-label",
+          "textRatio": 13.266890495436922,
+          "borderRatio": 3.205068171626354
+        },
+        {
+          "tag": "SPAN",
+          "text": "Assignee",
+          "textRatio": 5.015754885495116
+        },
+        {
+          "tag": "SELECT",
+          "text": "create-assignee-label",
+          "textRatio": 13.266890495436922,
+          "borderRatio": 3.205068171626354
+        },
+        {
+          "tag": "SPAN",
+          "text": "Description *",
+          "textRatio": 5.015754885495116
+        },
+        {
+          "tag": "TEXTAREA",
+          "text": "create-description-label",
+          "textRatio": 13.266890495436922,
+          "borderRatio": 3.205068171626354
+        },
+        {
+          "tag": "SPAN",
+          "text": "0/4000 characters",
+          "textRatio": 5.837870749755676
+        },
+        {
+          "tag": "P",
+          "text": "Status: Open · Browser only",
+          "textRatio": 5.837870749755676
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Cancel",
+          "textRatio": 10.56097848234087
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Create request",
+          "textRatio": 9.40230837163695
+        }
+      ]
+    },
+    {
+      "state": "mobile invalid",
+      "minimumText": 5.015754885495116,
+      "minimumControlBorder": 3.205068171626354,
+      "measured": [
+        {
+          "tag": "H2",
+          "text": "New request",
+          "textRatio": 13.266890495436922
+        },
+        {
+          "tag": "P",
+          "text": "Add a request to this browser’s workspace. Fields marked * are require",
+          "textRatio": 5.837870749755676
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Close ×",
+          "textRatio": 10.56097848234087
+        },
+        {
+          "tag": "SPAN",
+          "text": "×",
+          "textRatio": 10.56097848234087
+        },
+        {
+          "tag": "SPAN",
+          "text": "Title *",
+          "textRatio": 5.015754885495116
+        },
+        {
+          "tag": "INPUT",
+          "text": "create-title-label",
+          "textRatio": 13.266890495436922,
+          "borderRatio": 6.465551692567027
+        },
+        {
+          "tag": "SPAN",
+          "text": "Enter a title.",
+          "textRatio": 6.465551692567027
+        },
+        {
+          "tag": "SPAN",
+          "text": "Customer *",
+          "textRatio": 5.015754885495116
+        },
+        {
+          "tag": "INPUT",
+          "text": "create-customer-label",
+          "textRatio": 13.266890495436922,
+          "borderRatio": 6.465551692567027
+        },
+        {
+          "tag": "SPAN",
+          "text": "Enter a customer.",
+          "textRatio": 6.465551692567027
+        },
+        {
+          "tag": "SPAN",
+          "text": "Category *",
+          "textRatio": 5.015754885495116
+        },
+        {
+          "tag": "INPUT",
+          "text": "create-category-label",
+          "textRatio": 13.266890495436922,
+          "borderRatio": 6.465551692567027
+        },
+        {
+          "tag": "SPAN",
+          "text": "Enter a category.",
+          "textRatio": 6.465551692567027
+        },
+        {
+          "tag": "SPAN",
+          "text": "Priority",
+          "textRatio": 5.015754885495116
+        },
+        {
+          "tag": "SELECT",
+          "text": "create-priority-label",
+          "textRatio": 13.266890495436922,
+          "borderRatio": 3.205068171626354
+        },
+        {
+          "tag": "SPAN",
+          "text": "Assignee",
+          "textRatio": 5.015754885495116
+        },
+        {
+          "tag": "SELECT",
+          "text": "create-assignee-label",
+          "textRatio": 13.266890495436922,
+          "borderRatio": 3.205068171626354
+        },
+        {
+          "tag": "SPAN",
+          "text": "Description *",
+          "textRatio": 5.015754885495116
+        },
+        {
+          "tag": "TEXTAREA",
+          "text": "create-description-label",
+          "textRatio": 13.266890495436922,
+          "borderRatio": 6.465551692567027
+        },
+        {
+          "tag": "SPAN",
+          "text": "Enter a description.",
+          "textRatio": 6.465551692567027
+        },
+        {
+          "tag": "SPAN",
+          "text": "0/4000 characters",
+          "textRatio": 5.837870749755676
+        },
+        {
+          "tag": "P",
+          "text": "Status: Open · Browser only",
+          "textRatio": 5.837870749755676
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Cancel",
+          "textRatio": 10.56097848234087
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Create request",
+          "textRatio": 9.40230837163695
+        }
+      ]
+    }
+  ],
+  "baselineCSS": {
+    "status": "VERIFIED",
+    "before": {
+      "h1": {
+        "fontFamily": "\"DM Sans\", system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "fontSize": "32px",
+        "fontWeight": "600",
+        "lineHeight": "38.4px",
+        "color": "rgb(35, 51, 45)",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "borderColor": "rgb(35, 51, 45)",
+        "padding": "0px"
+      },
+      ".topbar": {
+        "fontFamily": "\"DM Sans\", system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "fontSize": "13px",
+        "fontWeight": "400",
+        "lineHeight": "19.5px",
+        "color": "rgb(83, 104, 90)",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "borderColor": "rgb(83, 104, 90) rgb(83, 104, 90) rgb(226, 231, 225)",
+        "padding": "0px"
+      },
+      ".metrics strong": {
+        "fontFamily": "\"DM Sans\", system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "fontSize": "29px",
+        "fontWeight": "500",
+        "lineHeight": "40.6px",
+        "color": "rgb(35, 51, 45)",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "borderColor": "rgb(35, 51, 45)",
+        "padding": "0px"
+      },
+      ".request-title": {
+        "fontFamily": "\"DM Sans\", system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "fontSize": "14px",
+        "fontWeight": "500",
+        "lineHeight": "21px",
+        "color": "rgb(43, 66, 53)",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "borderColor": "rgb(43, 66, 53)",
+        "padding": "0px"
+      },
+      "thead": {
+        "fontFamily": "\"DM Sans\", system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "fontSize": "12px",
+        "fontWeight": "400",
+        "lineHeight": "18px",
+        "color": "rgb(100, 112, 92)",
+        "backgroundColor": "rgb(248, 250, 246)",
+        "borderRadius": "0px",
+        "borderColor": "rgb(100, 112, 92)",
+        "padding": "0px"
+      },
+      ".status": {
+        "fontFamily": "\"DM Sans\", system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "fontSize": "13px",
+        "fontWeight": "400",
+        "lineHeight": "19.5px",
+        "color": "rgb(78, 102, 50)",
+        "backgroundColor": "rgb(244, 247, 237)",
+        "borderRadius": "4px",
+        "borderColor": "rgb(227, 233, 213)",
+        "padding": "3px 7px"
+      },
+      ".sort-label select": {
+        "fontFamily": "\"DM Sans\", system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "fontSize": "13px",
+        "fontWeight": "400",
+        "lineHeight": "normal",
+        "color": "rgb(35, 51, 45)",
+        "backgroundColor": "rgb(255, 255, 255)",
+        "borderRadius": "6px",
+        "borderColor": "rgb(229, 233, 227)",
+        "padding": "5px 23px 5px 7px"
+      },
+      ".pagination button": {
+        "fontFamily": "\"DM Sans\", system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "fontSize": "13px",
+        "fontWeight": "500",
+        "lineHeight": "19.5px",
+        "color": "rgb(52, 66, 59)",
+        "backgroundColor": "rgb(255, 255, 255)",
+        "borderRadius": "6px",
+        "borderColor": "rgb(213, 221, 215)",
+        "padding": "5px 10px"
+      }
+    },
+    "after": {
+      "h1": {
+        "fontFamily": "\"DM Sans\", system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "fontSize": "32px",
+        "fontWeight": "600",
+        "lineHeight": "38.4px",
+        "color": "rgb(35, 51, 45)",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "borderColor": "rgb(35, 51, 45)",
+        "padding": "0px"
+      },
+      ".topbar": {
+        "fontFamily": "\"DM Sans\", system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "fontSize": "13px",
+        "fontWeight": "400",
+        "lineHeight": "19.5px",
+        "color": "rgb(83, 104, 90)",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "borderColor": "rgb(83, 104, 90) rgb(83, 104, 90) rgb(226, 231, 225)",
+        "padding": "0px"
+      },
+      ".metrics strong": {
+        "fontFamily": "\"DM Sans\", system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "fontSize": "29px",
+        "fontWeight": "500",
+        "lineHeight": "40.6px",
+        "color": "rgb(35, 51, 45)",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "borderColor": "rgb(35, 51, 45)",
+        "padding": "0px"
+      },
+      ".request-title": {
+        "fontFamily": "\"DM Sans\", system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "fontSize": "14px",
+        "fontWeight": "500",
+        "lineHeight": "21px",
+        "color": "rgb(43, 66, 53)",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "borderColor": "rgb(43, 66, 53)",
+        "padding": "0px"
+      },
+      "thead": {
+        "fontFamily": "\"DM Sans\", system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "fontSize": "12px",
+        "fontWeight": "400",
+        "lineHeight": "18px",
+        "color": "rgb(100, 112, 92)",
+        "backgroundColor": "rgb(248, 250, 246)",
+        "borderRadius": "0px",
+        "borderColor": "rgb(100, 112, 92)",
+        "padding": "0px"
+      },
+      ".status": {
+        "fontFamily": "\"DM Sans\", system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "fontSize": "13px",
+        "fontWeight": "400",
+        "lineHeight": "19.5px",
+        "color": "rgb(78, 102, 50)",
+        "backgroundColor": "rgb(244, 247, 237)",
+        "borderRadius": "4px",
+        "borderColor": "rgb(227, 233, 213)",
+        "padding": "3px 7px"
+      },
+      ".sort-label select": {
+        "fontFamily": "\"DM Sans\", system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "fontSize": "13px",
+        "fontWeight": "400",
+        "lineHeight": "normal",
+        "color": "rgb(35, 51, 45)",
+        "backgroundColor": "rgb(255, 255, 255)",
+        "borderRadius": "6px",
+        "borderColor": "rgb(229, 233, 227)",
+        "padding": "5px 23px 5px 7px"
+      },
+      ".pagination button": {
+        "fontFamily": "\"DM Sans\", system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+        "fontSize": "13px",
+        "fontWeight": "500",
+        "lineHeight": "19.5px",
+        "color": "rgb(52, 66, 59)",
+        "backgroundColor": "rgb(255, 255, 255)",
+        "borderRadius": "6px",
+        "borderColor": "rgb(213, 221, 215)",
+        "padding": "5px 10px"
+      }
+    }
+  },
+  "checks": [
+    {
+      "name": "Enter first error and literal hostile text",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "browser UTF-8 2MB rejection preserves draft and saved copy",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "creation from existing corrupt-data recovery fallback",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "static-host creation and reload with zero API requests",
+      "status": "VERIFIED"
+    }
+  ]
+}
