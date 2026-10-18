@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { chromium } from "playwright";
+import { chromium, firefox, webkit } from "playwright";
+const browserType = process.env.AUDIT_BROWSER || "chromium";
 import { mkdir, writeFile } from "node:fs/promises";
 import { createAppServer } from "../server/app.ts";
 import { createSeed } from "../src/domain/seed.ts";
@@ -8,10 +9,13 @@ import { exportTickets, parseImport } from "../src/domain/tickets.ts";
 const server = createAppServer();
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const url = `http://127.0.0.1:${server.address().port}`;
-const browser = await chromium.launch({
+const browser = await { chromium, firefox, webkit }[browserType].launch({
   headless: true,
-  ...(process.env.CHROMIUM_PATH
-    ? { executablePath: process.env.CHROMIUM_PATH }
+  ...((browserType === "chromium" ? process.env.CHROMIUM_PATH : undefined)
+    ? {
+        executablePath:
+          browserType === "chromium" ? process.env.CHROMIUM_PATH : undefined,
+      }
     : {}),
 });
 const key = "support-desk-workbench:v1";
@@ -203,7 +207,7 @@ try {
       );
       await page.reload();
       assert.match(
-        await page.getByLabel("Saved view", { exact: true }).innerText(),
+        await page.getByLabel("Saved view", { exact: true }).textContent(),
         /Resolved latest/,
       );
       await page.getByRole("button", { name: "Clear", exact: true }).click();

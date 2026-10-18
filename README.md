@@ -63,13 +63,17 @@ npm test
 npm run format:check
 npm run lint
 npm run build
-npx playwright install chromium
+npx playwright install --with-deps chromium firefox webkit
 npm run test:browser
+npm run test:audit
+npm run test:a11y
 ```
 
 Tests use Node's built-in runner. Browser checks use the production build and cover filtering, pagination, saved views, editing, import/export, reset, keyboard focus, storage conflicts and server snapshots. CI runs these checks; the Pages deployment also checks the build before publishing. Browser screenshots are available as CI artifacts.
 
 Create-request design and review: [design specification](docs/create-request-design.md), [QA evidence and limitations](docs/create-request-qa.md). No Figma file or Figma handoff was produced. Additional browser checks cover field validation, ID collisions, record/UTF-8 limits, failed persistence, multi-tab conflicts, responsive layout and axe accessibility scans. To reproduce the optional pre-change CSS comparison, build the base revision separately and set `BASELINE_DIST=/path/to/base/dist` when running `node tests/create-request-review.mjs`.
+
+Audit scope, regression mapping and known verification limits: [October 2026 hardening](docs/audit/README.md). CI also runs Firefox/WebKit and Windows.
 
 ## Boundaries
 

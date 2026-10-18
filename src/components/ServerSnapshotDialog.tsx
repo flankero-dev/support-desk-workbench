@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { exportTickets, parseImport } from "../domain/tickets.ts";
+import {
+  exportTickets,
+  parseImport,
+  compareSnapshots,
+} from "../domain/tickets.ts";
 import type { Ticket } from "../domain/tickets.ts";
 export function ServerSnapshotDialog({
   tickets,
@@ -26,7 +30,18 @@ export function ServerSnapshotDialog({
       controller.current = null;
     };
   }, []);
+  const { added, removed, modified } = compareSnapshots(
+    tickets,
+    snapshot?.tickets ?? [],
+  );
   async function request(save: boolean) {
+    if (
+      save &&
+      !window.confirm(
+        `Replace the complete server copy? Browser has ${added} added, ${removed} removed and ${modified} modified requests (including notes). Export backups first.`,
+      )
+    )
+      return;
     controller.current?.abort();
     const abort = new AbortController();
     controller.current = abort;
@@ -34,6 +49,7 @@ export function ServerSnapshotDialog({
     setBusy(true);
     setError("");
     setMessage("");
+    if (!save) setSnapshot(null);
     try {
       const response = await fetch("/api/workspace", {
         method: save ? "PUT" : "GET",
@@ -65,6 +81,7 @@ export function ServerSnapshotDialog({
           : "Server copy loaded for comparison. Your browser copy is unchanged.",
       );
     } catch (cause) {
+      if (controller.current === abort) setSnapshot(null);
       if (controller.current === abort)
         setError(
           abort.signal.aborted
@@ -117,6 +134,13 @@ export function ServerSnapshotDialog({
             resolved.
           </p>
         )}
+        {snapshot && (
+          <p role="status">
+            Browser compared with server: {added} added, {removed} removed,{" "}
+            {modified} modified requests, including notes and activity.
+            Replacing either copy uses the entire dataset.
+          </p>
+        )}
         {error && <p role="alert">{error}</p>}
         {message && <p role="status">{message}</p>}
         <div className="header-actions">
@@ -137,7 +161,12 @@ export function ServerSnapshotDialog({
         <button
           disabled={busy || !snapshot}
           onClick={() => {
-            if (snapshot) {
+            if (
+              snapshot &&
+              window.confirm(
+                `Replace the complete browser copy with revision ${snapshot.etag}? Browser-only requests and edits will be discarded. Export a backup first.`,
+              )
+            ) {
               try {
                 onLoad(snapshot.tickets);
                 dialog.current?.close();

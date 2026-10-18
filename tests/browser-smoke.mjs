@@ -3,16 +3,20 @@ import { createAppServer } from "../server/app.ts";
 import { mkdir, readFile, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve, join } from "node:path";
-import { chromium } from "playwright";
+import { chromium, firefox, webkit } from "playwright";
+const browserType = process.env.AUDIT_BROWSER || "chromium";
 import { spawn } from "node:child_process";
 
 const server = createAppServer();
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const url = `http://127.0.0.1:${server.address().port}`;
-const browser = await chromium.launch({
+const browser = await { chromium, firefox, webkit }[browserType].launch({
   headless: true,
-  ...(process.env.CHROMIUM_PATH
-    ? { executablePath: process.env.CHROMIUM_PATH }
+  ...((browserType === "chromium" ? process.env.CHROMIUM_PATH : undefined)
+    ? {
+        executablePath:
+          browserType === "chromium" ? process.env.CHROMIUM_PATH : undefined,
+      }
     : {}),
 });
 const errors = [];
@@ -347,7 +351,8 @@ try {
   );
   const mobile = await browser.newPage({
     viewport: { width: 390, height: 844 },
-    isMobile: true,
+    ...(browserType === "firefox" ? {} : { isMobile: true }),
+    hasTouch: true,
   });
   await mobile.goto(url);
   await mobile.getByLabel("Search requests").fill("MAYA");
@@ -533,8 +538,12 @@ try {
     .click();
   await corruptViews.reload();
   const recovered = corruptViews;
+  // WebKit's native select innerText can be empty despite populated options.
+  await recovered
+    .getByRole("option", { name: "Recovered view", exact: true })
+    .waitFor({ state: "attached" });
   assert.match(
-    await recovered.getByLabel("Saved view", { exact: true }).innerText(),
+    await recovered.getByLabel("Saved view", { exact: true }).textContent(),
     /Recovered view/,
   );
   await recovered.evaluate(() =>
@@ -575,6 +584,7 @@ try {
   );
   assert.equal(await blockedViews.locator("#saved-view").count(), 0);
   const apiPage = await browser.newPage();
+  apiPage.on("dialog", (dialog) => dialog.accept());
   apiPage.on("pageerror", (error) => errors.push(error.message));
   await apiPage.goto(url);
   await apiPage
@@ -811,11 +821,26 @@ try {
   assert.equal(await edge.locator("tbody tr").count(), 1);
   assert.equal(await edge.locator(".view-error").count(), 0);
   await edge.locator(".request-title").first().click();
+  await edge.screenshot({ path: "docs/audit/long-import-mobile.png" });
+  const dialogGeometry = await edge.getByRole("dialog").evaluate((el) => ({
+    width: el.clientWidth,
+    scroll: el.scrollWidth,
+    overflowing: [...el.querySelectorAll("*")]
+      .filter((n) => n.scrollWidth > n.clientWidth + 1)
+      .map((n) => ({
+        tag: n.tagName,
+        class: n.className,
+        width: n.getBoundingClientRect().width,
+        scroll: n.scrollWidth,
+        text: n.textContent?.slice(0, 60),
+      })),
+  }));
   assert.equal(
     await edge
       .getByRole("dialog")
       .evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
     true,
+    JSON.stringify(dialogGeometry),
   );
   await edge.screenshot({ path: "docs/long-import-mobile.png" });
   await edge.keyboard.press("Escape");
@@ -936,7 +961,15 @@ try {
     await capacity.getByLabel("Internal note").inputValue(),
     "N".repeat(1000),
   );
-  assert.equal(await capacity.locator(".activity li").count(), count);
+  assert.equal(await capacity.locator(".activity li").count(), 50);
+  assert.equal(
+    JSON.parse(
+      await capacity.evaluate(() =>
+        localStorage.getItem("support-desk-workbench:v1"),
+      ),
+    ).tickets[0].activity.length,
+    count,
+  );
   await capacity.screenshot({
     path: "docs/support-size-rejection.png",
   });

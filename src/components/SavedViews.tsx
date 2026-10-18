@@ -144,14 +144,14 @@ export function SavedViews({
         ) : (
           <div className="views-empty">
             <strong>
-              {state.corruptRaw !== null
-                ? "Saved views unavailable"
-                : "No saved views yet"}
+              {state.error ? "Saved views unavailable" : "No saved views yet"}
             </strong>
             <p>
               {state.corruptRaw !== null
                 ? "Reset the unreadable preferences to save views again."
-                : "Save your current filters to use them again."}
+                : state.error
+                  ? "Browser preferences could not be read. Retry when storage is available."
+                  : "Save your current filters to use them again."}
             </p>
           </div>
         )}

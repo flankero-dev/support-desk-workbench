@@ -50,7 +50,6 @@ export function ImportDialog({
               event.target.value = "";
               if (!file) return;
               const version = ++readVersion.current;
-              setText("");
               setFileName("");
               setError("");
               setBusy(true);

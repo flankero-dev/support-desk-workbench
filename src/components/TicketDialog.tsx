@@ -8,8 +8,14 @@ export function TicketDialog({
   onClose,
   onUpdate,
   onNote,
+  storageWarning,
+  initialNote,
+  onDraft,
 }: {
   ticket: Ticket;
+  storageWarning: string;
+  initialNote: string;
+  onDraft: (note: string) => void;
   assignees: string[];
   onClose: () => void;
   onUpdate: (
@@ -18,7 +24,24 @@ export function TicketDialog({
   onNote: (note: string) => void;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
-  const [note, setNote] = useState("");
+  const [note, setNote] = useState(initialNote);
+  const [historyPage, setHistoryPage] = useState(0);
+  const historySize = 50;
+  const pageCount = Math.max(
+    1,
+    Math.ceil(ticket.activity.length / historySize),
+  );
+  const history = ticket.activity
+    .slice(
+      Math.max(0, ticket.activity.length - (historyPage + 1) * historySize),
+      ticket.activity.length - historyPage * historySize,
+    )
+    .reverse();
+  const dateFormat = new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "UTC",
+  });
   const [error, setError] = useState("");
   function update(
     changes: Partial<Pick<Ticket, "status" | "priority" | "assignee">>,
@@ -99,6 +122,11 @@ export function TicketDialog({
             </select>
           </label>
         </div>
+        {storageWarning && (
+          <p className="warning" role="status">
+            {storageWarning}
+          </p>
+        )}
         {error && (
           <p className="error" role="alert">
             {error}
@@ -107,23 +135,35 @@ export function TicketDialog({
         <section aria-labelledby="activity-heading">
           <h3 id="activity-heading">Activity</h3>
           <ol className="activity">
-            {ticket.activity
-              .slice()
-              .reverse()
-              .map((a, index) => (
-                <li key={`${a.at}-${index}`}>
-                  <span>{a.text}</span>
-                  <time dateTime={a.at}>
-                    {new Date(a.at).toLocaleString("en-GB", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                      timeZone: "UTC",
-                    })}{" "}
-                    UTC
-                  </time>
-                </li>
-              ))}
+            {history.map((a, index) => (
+              <li key={`${a.at}-${index}`}>
+                <span>{a.text}</span>
+                <time dateTime={a.at}>
+                  {dateFormat.format(new Date(a.at))} UTC
+                </time>
+              </li>
+            ))}
           </ol>
+          <p>
+            {ticket.activity.length} activity entries. Page {historyPage + 1} of{" "}
+            {pageCount}. Export includes the complete history.
+          </p>
+          {pageCount > 1 && (
+            <div className="pagination">
+              <button
+                disabled={historyPage === 0}
+                onClick={() => setHistoryPage((p) => p - 1)}
+              >
+                Newer activity
+              </button>
+              <button
+                disabled={historyPage + 1 >= pageCount}
+                onClick={() => setHistoryPage((p) => p + 1)}
+              >
+                Older activity
+              </button>
+            </div>
+          )}
         </section>
         <form
           onSubmit={(e) => {
@@ -132,6 +172,8 @@ export function TicketDialog({
               try {
                 onNote(note);
                 setNote("");
+                onDraft("");
+                setHistoryPage(0);
                 setError("");
               } catch (cause) {
                 setError(
@@ -147,13 +189,18 @@ export function TicketDialog({
           <textarea
             id="note"
             value={note}
-            onChange={(e) => setNote(e.target.value)}
+            onChange={(e) => {
+              setNote(e.target.value);
+              onDraft(e.target.value);
+            }}
             maxLength={1000}
             placeholder="Add context for the next person…"
             rows={3}
           />
           <div className="note-actions">
-            <span>{note.length}/1000</span>
+            <span>
+              {note.length}/1000 · Unsent draft stays in this tab when closed.
+            </span>
             <button className="primary" disabled={!note.trim()}>
               Add note
             </button>

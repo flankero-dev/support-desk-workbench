@@ -60,7 +60,7 @@ export function RequestTable({
             <th scope="col">Status</th>
             <th scope="col">Priority</th>
             <th scope="col">Assignee</th>
-            <th scope="col">Created</th>
+            <th scope="col">Created (UTC)</th>
           </tr>
         </thead>
         <tbody>
@@ -127,6 +127,7 @@ export function RequestTable({
               <td>
                 <time dateTime={t.createdAt}>
                   {new Date(t.createdAt).toLocaleDateString("en-GB", {
+                    year: "numeric",
                     month: "short",
                     day: "numeric",
                     timeZone: "UTC",

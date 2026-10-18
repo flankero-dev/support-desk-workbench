@@ -1,3 +1,4 @@
+import { validIdentifier } from "./text.ts";
 import { readFilters, writeFilters } from "./tickets.ts";
 import type { Filters } from "./tickets.ts";
 
@@ -8,7 +9,7 @@ export type QueueView = { name: string; search: string };
 function validName(name: unknown): name is string {
   return (
     typeof name === "string" &&
-    name.trim() === name &&
+    validIdentifier(name) &&
     name.length > 0 &&
     name.length <= 40 &&
     !Array.from(name).some(

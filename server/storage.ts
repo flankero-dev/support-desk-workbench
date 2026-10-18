@@ -148,7 +148,16 @@ export function openWorkspace(databasePath: string) {
     }
 
     // Check the existing schema before returning an open handle.
-    transaction(false, snapshot);
+    transaction(false, () => {
+      try {
+        parseImport(snapshot().document);
+      } catch (cause) {
+        throw new Error(
+          "Invalid stored workspace. Back up the database and repair its data before restarting; no data was replaced.",
+          { cause },
+        );
+      }
+    });
     return {
       current: () => transaction(false, snapshot),
       save: (tickets: Ticket[], revision: number): Snapshot | undefined =>
