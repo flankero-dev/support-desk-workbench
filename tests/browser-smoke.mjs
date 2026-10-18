@@ -821,11 +821,30 @@ try {
   assert.equal(await edge.locator("tbody tr").count(), 1);
   assert.equal(await edge.locator(".view-error").count(), 0);
   await edge.locator(".request-title").first().click();
+  await edge.screenshot({ path: "docs/audit/long-import-mobile.png" });
+  const dialogGeometry = await edge.getByRole("dialog").evaluate((el) => ({
+    width: el.clientWidth,
+    scroll: el.scrollWidth,
+    overflowing: [...el.querySelectorAll("*")]
+      .filter(
+        (n) =>
+          n.getBoundingClientRect().right >
+          el.getBoundingClientRect().right + 1,
+      )
+      .map((n) => ({
+        tag: n.tagName,
+        class: n.className,
+        width: n.getBoundingClientRect().width,
+        scroll: n.scrollWidth,
+        text: n.textContent?.slice(0, 60),
+      })),
+  }));
   assert.equal(
     await edge
       .getByRole("dialog")
       .evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
     true,
+    JSON.stringify(dialogGeometry),
   );
   await edge.screenshot({ path: "docs/long-import-mobile.png" });
   await edge.keyboard.press("Escape");

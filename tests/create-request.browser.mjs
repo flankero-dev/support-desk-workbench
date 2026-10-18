@@ -207,7 +207,7 @@ try {
       );
       await page.reload();
       assert.match(
-        await page.getByLabel("Saved view", { exact: true }).innerText(),
+        await page.getByLabel("Saved view", { exact: true }).textContent(),
         /Resolved latest/,
       );
       await page.getByRole("button", { name: "Clear", exact: true }).click();
