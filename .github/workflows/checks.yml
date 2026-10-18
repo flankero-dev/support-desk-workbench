@@ -35,6 +35,7 @@ jobs:
             docs/*.png
             docs/create-request/*.png
             docs/create-request/*results.json
+            docs/audit
 
   browser-engines:
     timeout-minutes: 15

@@ -351,7 +351,8 @@ try {
   );
   const mobile = await browser.newPage({
     viewport: { width: 390, height: 844 },
-    isMobile: true,
+    ...(browserType === "firefox" ? {} : { isMobile: true }),
+    hasTouch: true,
   });
   await mobile.goto(url);
   await mobile.getByLabel("Search requests").fill("MAYA");
@@ -537,8 +538,12 @@ try {
     .click();
   await corruptViews.reload();
   const recovered = corruptViews;
+  // WebKit's native select innerText can be empty despite populated options.
+  await recovered
+    .getByRole("option", { name: "Recovered view", exact: true })
+    .waitFor({ state: "attached" });
   assert.match(
-    await recovered.getByLabel("Saved view", { exact: true }).innerText(),
+    await recovered.getByLabel("Saved view", { exact: true }).textContent(),
     /Recovered view/,
   );
   await recovered.evaluate(() =>
