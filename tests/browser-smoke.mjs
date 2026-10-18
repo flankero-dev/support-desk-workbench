@@ -835,31 +835,6 @@ try {
         text: n.textContent?.slice(0, 60),
       })),
   }));
-  if (dialogGeometry.scroll > dialogGeometry.width + 1) {
-    console.log("Overflow diagnostics", JSON.stringify(dialogGeometry));
-    console.log(
-      "Overflow isolation",
-      await edge.getByRole("dialog").evaluate((el) => {
-        const out = [];
-        for (const selector of [
-          "select",
-          "textarea",
-          ".dialog-header",
-          ".dialog-body h2",
-          ".eyebrow",
-          ".description",
-          ".note-actions",
-        ]) {
-          const nodes = [...el.querySelectorAll(selector)];
-          const old = nodes.map((n) => n.style.display);
-          nodes.forEach((n) => (n.style.display = "none"));
-          out.push({ selector, width: el.scrollWidth });
-          nodes.forEach((n, i) => (n.style.display = old[i]));
-        }
-        return out;
-      }),
-    );
-  }
   assert.equal(
     await edge
       .getByRole("dialog")

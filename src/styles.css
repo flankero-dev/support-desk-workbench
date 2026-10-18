@@ -627,6 +627,9 @@ dialog::backdrop {
 .detail-fields label select {
   font-size: 12px;
   width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .activity {
   list-style: none;
