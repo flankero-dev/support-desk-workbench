@@ -1,3 +1,4 @@
+import { validText, validIdentifier, validTimestamp } from "./text.ts";
 export const statuses = ["Open", "In progress", "Waiting", "Resolved"] as const;
 export const priorities = ["Urgent", "High", "Normal", "Low"] as const;
 export type Status = (typeof statuses)[number];
@@ -117,7 +118,7 @@ export function addNote(
   at: string,
 ): Ticket[] {
   const text = note.trim();
-  if (!text || text.length > 1000)
+  if (!validText(text) || text.length > 1000)
     throw new Error("Notes must contain 1–1000 characters.");
   return tickets.map((t) =>
     t.id === id
@@ -160,6 +161,8 @@ export function parseImport(input: string): Ticket[] {
     value.tickets.length > 500
   )
     throw new Error("Expected version 1 and 1–500 tickets.");
+  // Check canonical size before field errors, preserving the export-limit contract.
+  assertWorkspaceSize(JSON.stringify(value));
   const ids = new Set<string>();
   const tickets = value.tickets.map((item, index) => {
     if (!isRecord(item)) throw new Error(`Ticket ${index + 1} is invalid.`);
@@ -175,11 +178,18 @@ export function parseImport(input: string): Ticket[] {
     ] as const) {
       if (
         typeof item[field] !== "string" ||
-        !item[field].trim() ||
+        !validText(item[field]) ||
         item[field].length > (field === "description" ? 4000 : 200)
       )
         throw new Error(`Ticket ${index + 1}: invalid ${field}.`);
     }
+    if (
+      !validIdentifier(item.id as string) ||
+      !validIdentifier(item.assignee as string)
+    )
+      throw new Error(
+        `Ticket ${index + 1}: IDs and assignees must have no surrounding whitespace or invisible controls. Original input is unchanged.`,
+      );
     if (ids.has(item.id as string))
       throw new Error(`Duplicate ticket ID: ${item.id}.`);
     ids.add(item.id as string);
@@ -189,8 +199,10 @@ export function parseImport(input: string): Ticket[] {
     )
       throw new Error(`Ticket ${index + 1}: invalid status or priority.`);
     if (
-      !Number.isFinite(Date.parse(item.createdAt as string)) ||
-      !Number.isFinite(Date.parse(item.updatedAt as string))
+      !validTimestamp(item.createdAt as string) ||
+      !validTimestamp(item.updatedAt as string) ||
+      Date.parse(item.updatedAt as string) <
+        Date.parse(item.createdAt as string)
     )
       throw new Error(`Ticket ${index + 1}: invalid date.`);
     if (
@@ -199,10 +211,10 @@ export function parseImport(input: string): Ticket[] {
         (a) =>
           !isRecord(a) ||
           typeof a.text !== "string" ||
-          !a.text.trim() ||
+          !validText(a.text) ||
           a.text.length > 1200 ||
           typeof a.at !== "string" ||
-          !Number.isFinite(Date.parse(a.at)),
+          !validTimestamp(a.at),
       )
     )
       throw new Error(`Ticket ${index + 1}: invalid activity.`);
@@ -230,4 +242,35 @@ export function parseImport(input: string): Ticket[] {
 }
 export function exportTickets(tickets: Ticket[]): string {
   return JSON.stringify({ version: 1, tickets });
+}
+
+export function compareSnapshots(browser: Ticket[], server: Ticket[]) {
+  const browserById = new Map(browser.map((t) => [t.id, t]));
+  const serverById = new Map(server.map((t) => [t.id, t]));
+  const fields = [
+    "title",
+    "customer",
+    "category",
+    "assignee",
+    "description",
+    "createdAt",
+    "updatedAt",
+    "status",
+    "priority",
+  ] as const;
+  const same = (a: Ticket, b: Ticket) =>
+    fields.every((field) => a[field] === b[field]) &&
+    a.activity.length === b.activity.length &&
+    a.activity.every(
+      (event, i) =>
+        event.at === b.activity[i].at && event.text === b.activity[i].text,
+    );
+  return {
+    added: browser.filter((t) => !serverById.has(t.id)).length,
+    removed: server.filter((t) => !browserById.has(t.id)).length,
+    modified: browser.filter((t) => {
+      const other = serverById.get(t.id);
+      return other && !same(t, other);
+    }).length,
+  };
 }

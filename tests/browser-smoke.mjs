@@ -3,16 +3,20 @@ import { createAppServer } from "../server/app.ts";
 import { mkdir, readFile, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve, join } from "node:path";
-import { chromium } from "playwright";
+import { chromium, firefox, webkit } from "playwright";
+const browserType = process.env.AUDIT_BROWSER || "chromium";
 import { spawn } from "node:child_process";
 
 const server = createAppServer();
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const url = `http://127.0.0.1:${server.address().port}`;
-const browser = await chromium.launch({
+const browser = await { chromium, firefox, webkit }[browserType].launch({
   headless: true,
-  ...(process.env.CHROMIUM_PATH
-    ? { executablePath: process.env.CHROMIUM_PATH }
+  ...((browserType === "chromium" ? process.env.CHROMIUM_PATH : undefined)
+    ? {
+        executablePath:
+          browserType === "chromium" ? process.env.CHROMIUM_PATH : undefined,
+      }
     : {}),
 });
 const errors = [];
@@ -575,6 +579,7 @@ try {
   );
   assert.equal(await blockedViews.locator("#saved-view").count(), 0);
   const apiPage = await browser.newPage();
+  apiPage.on("dialog", (dialog) => dialog.accept());
   apiPage.on("pageerror", (error) => errors.push(error.message));
   await apiPage.goto(url);
   await apiPage
@@ -936,7 +941,15 @@ try {
     await capacity.getByLabel("Internal note").inputValue(),
     "N".repeat(1000),
   );
-  assert.equal(await capacity.locator(".activity li").count(), count);
+  assert.equal(await capacity.locator(".activity li").count(), 50);
+  assert.equal(
+    JSON.parse(
+      await capacity.evaluate(() =>
+        localStorage.getItem("support-desk-workbench:v1"),
+      ),
+    ).tickets[0].activity.length,
+    count,
+  );
   await capacity.screenshot({
     path: "docs/support-size-rejection.png",
   });

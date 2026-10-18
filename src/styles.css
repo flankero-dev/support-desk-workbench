@@ -1022,3 +1022,18 @@ dialog::backdrop {
     margin: 8px 0 0;
   }
 }
+
+/* Long imported/generated IDs must not consume the request title column. */
+.request-line {
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.request-line .mono {
+  max-width: 16ch;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.request-title {
+  flex: 1 1 180px;
+  min-width: 0;
+}

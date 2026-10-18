@@ -6,7 +6,12 @@ permissions:
   contents: read
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,11 +25,40 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:browser
+      - run: npm run test:audit
+      - run: npm run test:a11y
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: browser-screenshots
+          name: browser-screenshots-${{ matrix.os }}
           path: |
             docs/*.png
             docs/create-request/*.png
             docs/create-request/*results.json
+
+  browser-engines:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [firefox, webkit]
+    env:
+      AUDIT_BROWSER: ${{ matrix.browser }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - run: npm run test:browser
+      - run: npm run test:audit
+      - run: npm run test:a11y
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: audit-${{ matrix.browser }}
+          path: docs/audit

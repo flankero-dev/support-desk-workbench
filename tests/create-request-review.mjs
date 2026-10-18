@@ -1,7 +1,8 @@
 // Independent black-box review: production assets, computed CSS, accessibility
 // and adversarial data. No assertion relies on React state or Tailwind strings.
 import assert from "node:assert/strict";
-import { chromium } from "playwright";
+import { chromium, firefox, webkit } from "playwright";
+const browserType = process.env.AUDIT_BROWSER || "chromium";
 import AxeBuilder from "@axe-core/playwright";
 import { createAppServer } from "../server/app.ts";
 import { createSeed } from "../src/domain/seed.ts";
@@ -9,10 +10,13 @@ import { exportTickets, parseImport } from "../src/domain/tickets.ts";
 import { mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
-const browser = await chromium.launch({
+const browser = await { chromium, firefox, webkit }[browserType].launch({
   headless: true,
-  ...(process.env.CHROMIUM_PATH
-    ? { executablePath: process.env.CHROMIUM_PATH }
+  ...((browserType === "chromium" ? process.env.CHROMIUM_PATH : undefined)
+    ? {
+        executablePath:
+          browserType === "chromium" ? process.env.CHROMIUM_PATH : undefined,
+      }
     : {}),
 });
 const server = createAppServer();
@@ -390,6 +394,13 @@ try {
     localStorage.setItem("support-desk-workbench:v1", "{broken"),
   );
   await corrupt.goto(url);
+  corrupt.once("dialog", (dialog) => dialog.accept());
+  await corrupt
+    .getByRole("button", {
+      name: "Allow replacement of unreadable data",
+      exact: true,
+    })
+    .click();
   await open(corrupt);
   await fill(corrupt, "Recovered workspace request");
   await corrupt

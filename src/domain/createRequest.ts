@@ -1,3 +1,4 @@
+import { validText } from "./text.ts";
 import { exportTickets, parseImport, priorities } from "./tickets.ts";
 import type { Ticket } from "./tickets.ts";
 
@@ -26,7 +27,7 @@ export function validateRequest(draft: RequestDraft): DraftErrors {
   ] as const) {
     const value = draft[field];
     const limit = field === "description" ? 4000 : 200;
-    if (typeof value !== "string" || !value.trim())
+    if (typeof value !== "string" || !validText(value))
       errors[field] = `Enter a ${label.toLowerCase()}.`;
     else if (value.trim().length > limit)
       errors[field] = `${label} must be ${limit} characters or fewer.`;
