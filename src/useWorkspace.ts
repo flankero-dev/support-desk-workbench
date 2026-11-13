@@ -8,22 +8,27 @@ import {
 const storageKey = "support-desk-workbench:v1";
 const conflictMessage =
   "Another tab changed this workspace. Saving here is paused to protect those changes. Export this tab if needed, then reload to use the saved workspace.";
+const recoveryMessage =
+  "Saved workspace could not be loaded. Showing sample data. Export the unreadable saved data before explicitly allowing its replacement.";
 function load() {
   let saved: string | null = null;
   try {
     saved = localStorage.getItem(storageKey);
     return {
-      tickets: saved ? parseImport(saved) : createSeed(),
+      tickets: saved !== null ? parseImport(saved) : createSeed(),
       warning: "",
       saved,
+      recovery: false,
     };
   } catch {
     return {
       tickets: createSeed(),
       saved,
-      warning: saved
-        ? "Saved workspace could not be loaded. Showing sample data. Editing or importing will replace the unreadable saved copy."
-        : "Browser storage could not be read. Showing sample data; changes may only work in this tab.",
+      recovery: saved !== null,
+      warning:
+        saved !== null
+          ? recoveryMessage
+          : "Browser storage could not be read. Showing sample data; changes may only work in this tab.",
     };
   }
 }
@@ -33,8 +38,12 @@ export function useWorkspace() {
   const currentTickets = useRef(initial.tickets);
   const [storageWarning, setStorageWarning] = useState(initial.warning);
   const [storageConflict, setStorageConflict] = useState(false);
+  const [recoveryRequired, setRecoveryRequired] = useState(initial.recovery);
+  const recovery = useRef(initial.recovery);
   const lastSaved = useRef(initial.saved);
   const blocked = useRef(false);
+  const lastMutationSaved = useRef(true);
+  const [unsaved, setUnsaved] = useState(false);
   function setTickets(
     next: typeof tickets | ((current: typeof tickets) => typeof tickets),
     options?: { requirePersistence: boolean },
@@ -42,38 +51,45 @@ export function useWorkspace() {
     const candidate =
       typeof next === "function" ? next(currentTickets.current) : next;
     if (candidate === currentTickets.current) return candidate;
-    // Reject growth before changing memory, so every browser copy remains restorable.
+    const saved = exportTickets(candidate);
     try {
-      assertWorkspaceSize(exportTickets(candidate));
+      assertWorkspaceSize(saved);
     } catch {
       throw new Error(
         "This change would exceed the 2 MB workspace limit. Nothing was changed. Export a backup before replacing it with a smaller workspace.",
       );
     }
-    if (options?.requirePersistence) {
-      // Creation must not announce success before a durable browser write.
-      // Existing editing keeps its documented in-tab fallback when storage fails.
-      if (blocked.current) throw new Error(conflictMessage);
-      try {
-        if (localStorage.getItem(storageKey) !== lastSaved.current) {
-          blocked.current = true;
-          setStorageConflict(true);
-          setStorageWarning(conflictMessage);
-          throw new Error(conflictMessage);
-        }
-        const saved = exportTickets(candidate);
-        parseImport(saved);
-        localStorage.setItem(storageKey, saved);
-        lastSaved.current = saved;
-        setStorageWarning("");
-      } catch (cause) {
-        if (blocked.current) throw cause;
-        throw new Error(
-          "The request could not be saved in this browser. Storage may be unavailable or full. Your form is unchanged; free space or export a backup before trying again.",
-          { cause },
-        );
+    parseImport(saved);
+    if (recovery.current) throw new Error(recoveryMessage);
+    let warning = "";
+    try {
+      if (
+        blocked.current ||
+        localStorage.getItem(storageKey) !== lastSaved.current
+      ) {
+        blocked.current = true;
+        setStorageConflict(true);
+        throw new Error(conflictMessage);
       }
+      localStorage.setItem(storageKey, saved);
+      lastSaved.current = saved;
+      lastMutationSaved.current = true;
+      setUnsaved(false);
+    } catch {
+      lastMutationSaved.current = false;
+      warning = blocked.current
+        ? conflictMessage
+        : "Browser storage is unavailable or full. Changes work in this tab only; not saved. Export a backup before leaving.";
+      setStorageWarning(warning);
+      if (options?.requirePersistence)
+        throw new Error(
+          blocked.current
+            ? conflictMessage
+            : "The request could not be saved in this browser. Storage may be unavailable or full. Your form is unchanged; free space or export a backup before trying again.",
+        );
+      setUnsaved(true);
     }
+    setStorageWarning(warning);
     currentTickets.current = candidate;
     commitTickets(candidate);
     return candidate;
@@ -94,32 +110,33 @@ export function useWorkspace() {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
   useEffect(() => {
-    if (tickets === initial.tickets || blocked.current) return;
-    try {
-      // Recheck immediately before writing, even if the storage event has not arrived.
-      if (localStorage.getItem(storageKey) !== lastSaved.current) {
-        blocked.current = true;
-        queueMicrotask(() => {
-          setStorageConflict(true);
-          setStorageWarning(conflictMessage);
-        });
-        return;
-      }
-      const saved = exportTickets(tickets);
-      if (saved === lastSaved.current) return;
-      // Keep the saved copy readable by the same importer used on reload.
-      parseImport(saved);
-      localStorage.setItem(storageKey, saved);
-      lastSaved.current = saved;
-      queueMicrotask(() => setStorageWarning(""));
-    } catch (error) {
-      const warning =
-        error instanceof Error &&
-        error.message.startsWith("Workspace JSON is limited")
-          ? "The workspace could not be saved within the 2 MB limit. The previous saved copy is unchanged."
-          : "Browser storage is unavailable or full. Changes work in this tab only; export a backup.";
-      queueMicrotask(() => setStorageWarning(warning));
-    }
-  }, [tickets, initial.tickets]);
-  return { tickets, setTickets, storageWarning, storageConflict };
+    if (!unsaved) return;
+    const warn = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [unsaved]);
+  function allowRecoveryReplacement() {
+    recovery.current = false;
+    setRecoveryRequired(false);
+    setStorageWarning(
+      "Replacement allowed. The unreadable saved copy remains unchanged until your next successful edit or restore.",
+    );
+  }
+  const persistenceNotice = () =>
+    lastMutationSaved.current
+      ? "Saved in this browser."
+      : "Not saved: this tab only. Export a backup before leaving.";
+  return {
+    tickets,
+    setTickets,
+    storageWarning,
+    storageConflict,
+    recoveryRequired,
+    recoveryRaw: initial.saved,
+    allowRecoveryReplacement,
+    persistenceNotice,
+  };
 }

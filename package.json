@@ -12,7 +12,9 @@
     "test:browser": "node tests/browser-smoke.mjs && node tests/create-request.browser.mjs && node tests/create-request-review.mjs",
     "start": "node server/start.ts",
     "format": "prettier --write src tests index.html README.md \"*.json\" \"*.js\" server \"*.ts\" \"docs/*.md\" .github/workflows",
-    "format:check": "prettier --check src tests index.html README.md \"*.json\" \"*.js\" server \"*.ts\" \"docs/*.md\" .github/workflows"
+    "format:check": "prettier --check src tests index.html README.md \"*.json\" \"*.js\" server \"*.ts\" \"docs/*.md\" .github/workflows",
+    "test:audit": "node tests/audit.browser.mjs",
+    "test:a11y": "node tests/accessibility.browser.mjs"
   },
   "dependencies": {
     "react": "^19.2.6",

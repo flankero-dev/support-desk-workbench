@@ -66,8 +66,22 @@ Status, priority, assignee and sidebar labels use darker colours against their a
 
 Select all applies to the visible page. Selection is retained when changing pages, while changing filters clears it. A visible hint states the pagination rule and a browser regression checks selecting and deselecting separate pages.
 
-The 2 MB JSON limit is measured in UTF-8 bytes, matching the HTTP boundary. A regression uses a Cyrillic document that fits the former string-length limit but exceeds the byte limit. Small Unicode documents still round-trip normally. An unreadable-storage warning now explains that the displayed data is the sample and that editing or importing replaces the unreadable saved copy; exporting the sample is not presented as recovery of that copy.
+The 2 MB JSON limit is measured in UTF-8 bytes, matching the HTTP boundary. A regression uses a Cyrillic document that fits the former string-length limit but exceeds the byte limit. Small Unicode documents still round-trip normally. An unreadable-storage warning explains that the displayed data is the sample. Raw backup and explicit acknowledgement are required before editing or importing can replace the unreadable saved copy; exporting the sample is not presented as recovery of that copy.
 
 ## Local API availability
 
 A loopback hostname alone does not imply an API. The header performs one bounded GET probe and enables Server snapshot only for a JSON response with a valid ETag. A Vite HTML fallback keeps it disabled with a setup hint. Non-loopback deployments neither probe nor show the control. The dialog still handles later network failures and revision conflicts.
+
+## Audit hardening, October 2026
+
+Every mutation validates the candidate and tries persistence before committing UI state. Ordinary edits can still work in memory if storage is unavailable, but show “not saved” in the active dialog and workspace; a before-unload warning supplements export. New request remains stricter: failure preserves the form and does not add a row. Storage events and a synchronous pre-write comparison detect stale copies, including a delayed event. localStorage is not a cross-process transaction: truly simultaneous check/write races remain a platform limitation; the SQLite snapshot API provides atomic revision checks. Do not treat this demo as a collaborative service.
+
+Timestamp imports require real ISO calendar dates with explicit Z or numeric offset (seconds required, up to three fractional digits). Offsets are preserved and interpreted as instants; the UI labels UTC and includes the year. `updatedAt` cannot precede `createdAt`. History is an append-ordered external log: valid timestamps may be backdated or outside ticket bounds because clock skew and imported history are supported; no history is silently reordered or discarded. Canonical exports produced by the application remain supported. Previously accepted ambiguous/impossible dates and unsafe text now fail with original input retained; a damaged saved workspace offers a raw backup before replacement. No automatic timezone guessing or ID renaming occurs.
+
+Identifiers and assignees reject outer whitespace and invisible control/format characters; labels reject empty/invisible-only text, directional overrides and ill-formed UTF-16, while ordinary Unicode, emoji, combining marks and joining marks inside prose remain intact. Visually similar letters across alphabets are not an identity-normalization scheme. Saved view names follow the identifier rule.
+
+Ticket history displays 50 entries per page, newest appended first; exports and SQLite retain all entries. Unsubmitted note drafts survive closing/reopening that ticket within the current tab, but are not persisted across reload; replacing the entire workspace clears drafts. Failed file selections retain pasted restore JSON. Cancel/Escape still cancels the import dialog.
+
+Server snapshot comparison counts added/removed/modified IDs and includes notes/history. Both replacement directions require a browser confirmation; export backups before proceeding. A failed or cancelled refresh clears the loaded snapshot and disables replacement until a successful retry. The optional server remains loopback-only, validates UTF-8 and loaded database business data, and checks real-path containment for static files. A malicious process changing files after the realpath check is outside this local, trusted-dist threat model.
+
+See [audit evidence](audit/README.md) and `npm run test:audit` / `npm run test:a11y`. Native screen-reader and physical-device coverage must not be inferred from automated checks.

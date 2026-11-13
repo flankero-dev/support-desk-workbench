@@ -25,13 +25,22 @@ import "./create-request.css";
 
 const pageSize = 8;
 export default function App() {
-  const { tickets, setTickets, storageWarning, storageConflict } =
-    useWorkspace();
+  const {
+    tickets,
+    setTickets,
+    storageWarning,
+    storageConflict,
+    recoveryRequired,
+    recoveryRaw,
+    allowRecoveryReplacement,
+    persistenceNotice,
+  } = useWorkspace();
   const [filters, setFilters] = useState(() =>
     readFilters(window.location.search),
   );
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<string[]>([]);
+  const [noteDrafts, setNoteDrafts] = useState(new Map<string, string>());
   const [activeId, setActiveId] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -147,7 +156,15 @@ export default function App() {
         Skip to workspace
       </a>
       <aside className="sidebar" aria-label="Workspace navigation">
-        <a href="?" className="brand">
+        <a
+          href="?"
+          className="brand"
+          onClick={(event) => {
+            event.preventDefault();
+            changeFilters(defaultFilters);
+            searchRef.current?.focus();
+          }}
+        >
           <span className="brand-mark" aria-hidden="true">
             s.
           </span>
@@ -155,6 +172,7 @@ export default function App() {
         </a>
         <div className="workspace-label">WORKSPACE</div>
         <button
+          aria-pressed={filters.status === "All"}
           className={filters.status === "All" ? "nav active" : "nav"}
           onClick={() => changeFilters({ status: "All" })}
         >
@@ -162,6 +180,7 @@ export default function App() {
           <span>{tickets.length}</span>
         </button>
         <button
+          aria-pressed={filters.status === "Open"}
           className={filters.status === "Open" ? "nav active" : "nav"}
           onClick={() => changeFilters({ status: "Open" })}
         >
@@ -169,6 +188,7 @@ export default function App() {
           <span>{openCount}</span>
         </button>
         <button
+          aria-pressed={filters.status === "Waiting"}
           className={filters.status === "Waiting" ? "nav active" : "nav"}
           onClick={() => changeFilters({ status: "Waiting" })}
         >
@@ -176,6 +196,7 @@ export default function App() {
           <span>{tickets.filter((t) => t.status === "Waiting").length}</span>
         </button>
         <button
+          aria-pressed={filters.status === "Resolved"}
           className={filters.status === "Resolved" ? "nav active" : "nav"}
           onClick={() => changeFilters({ status: "Resolved" })}
         >
@@ -190,7 +211,7 @@ export default function App() {
           </button>
         </div>
       </aside>
-      <main id="main">
+      <main id="main" tabIndex={-1}>
         <div className="topbar">
           <span>
             Workspace <span className="slash">/</span> Requests
@@ -236,6 +257,38 @@ export default function App() {
         {storageWarning && (
           <p role="alert" className="warning">
             {storageWarning}
+            {recoveryRequired && (
+              <>
+                <button
+                  onClick={() => {
+                    const url = URL.createObjectURL(
+                      new Blob([recoveryRaw ?? ""], {
+                        type: "application/json",
+                      }),
+                    );
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "support-desk-unreadable-backup.json";
+                    a.click();
+                    setTimeout(() => URL.revokeObjectURL(url), 1000);
+                  }}
+                >
+                  Export unreadable saved data
+                </button>
+                <button
+                  onClick={() => {
+                    if (
+                      window.confirm(
+                        "Allow the next edit or restore to replace the unreadable saved data? Export its raw backup first.",
+                      )
+                    )
+                      allowRecoveryReplacement();
+                  }}
+                >
+                  Allow replacement of unreadable data
+                </button>
+              </>
+            )}
             {storageConflict && (
               <button onClick={() => window.location.reload()}>
                 Reload saved workspace
@@ -340,12 +393,13 @@ export default function App() {
                     );
                     setMessage(
                       changed
-                        ? `Updated ${changed} of ${selected.length} selected ${selected.length === 1 ? "request" : "requests"} to ${bulkStatus}.`
+                        ? `Updated ${changed} of ${selected.length} selected ${selected.length === 1 ? "request" : "requests"} to ${bulkStatus}. ${persistenceNotice()}`
                         : selected.length === 1
                           ? `No changes: the selected request is already ${bulkStatus}.`
                           : `No changes: all ${selected.length} selected requests are already ${bulkStatus}.`,
                     );
                     setSelected([]);
+                    searchRef.current?.focus();
                   } catch (error) {
                     setMessage(
                       error instanceof Error
@@ -357,7 +411,14 @@ export default function App() {
               >
                 Apply status
               </button>
-              <button onClick={() => setSelected([])}>Cancel selection</button>
+              <button
+                onClick={() => {
+                  setSelected([]);
+                  searchRef.current?.focus();
+                }}
+              >
+                Cancel selection
+              </button>
             </div>
           )}
           <p className="selection-hint">
@@ -450,6 +511,16 @@ export default function App() {
         <TicketDialog
           key={active.id}
           ticket={active}
+          storageWarning={storageWarning}
+          initialNote={noteDrafts.get(active.id) ?? ""}
+          onDraft={(note) => {
+            setNoteDrafts((current) => {
+              const next = new Map(current);
+              if (note) next.set(active.id, note);
+              else next.delete(active.id);
+              return next;
+            });
+          }}
           assignees={assignees}
           onClose={() => {
             setActiveId(null);
@@ -457,11 +528,15 @@ export default function App() {
             if (trigger) trigger.focus();
             else searchRef.current?.focus();
           }}
-          onUpdate={(changes) =>
-            setTickets((ts) =>
+          onUpdate={(changes) => {
+            const next = setTickets((ts) =>
               updateTickets(ts, [active.id], changes, new Date().toISOString()),
-            )
-          }
+            );
+            const matching = new Set(
+              filterTickets(next, filters).map((t) => t.id),
+            );
+            setSelected((ids) => ids.filter((id) => matching.has(id)));
+          }}
           onNote={(note) =>
             setTickets((ts) =>
               addNote(ts, active.id, note, new Date().toISOString()),
@@ -475,10 +550,13 @@ export default function App() {
           onClose={() => setServerSnapshotOpen(false)}
           onLoad={(next) => {
             setTickets(next);
+            setNoteDrafts(new Map());
             setSelected([]);
             setPage(1);
             setActiveId(null);
-            setMessage("Loaded server snapshot into this browser.");
+            setMessage(
+              `Loaded server snapshot into this browser. ${persistenceNotice()}`,
+            );
           }}
         />
       )}
@@ -487,11 +565,12 @@ export default function App() {
           onClose={() => setImporting(false)}
           onImport={(next) => {
             setTickets(next);
+            setNoteDrafts(new Map());
             setSelected([]);
             setPage(1);
             setActiveId(null);
             setMessage(
-              `Imported ${next.length} ${next.length === 1 ? "request" : "requests"}.`,
+              `Imported ${next.length} ${next.length === 1 ? "request" : "requests"}. ${persistenceNotice()}`,
             );
           }}
         />
@@ -510,11 +589,21 @@ export default function App() {
             <button
               className="primary"
               onClick={() => {
-                setTickets(createSeed());
-                setSelected([]);
-                changeFilters(defaultFilters);
-                setMessage("Sample workspace restored.");
-                resetRef.current?.close();
+                try {
+                  setTickets(createSeed());
+                  setNoteDrafts(new Map());
+                  setSelected([]);
+                  changeFilters(defaultFilters);
+                  setMessage(
+                    `Sample workspace restored. ${persistenceNotice()}`,
+                  );
+                  resetRef.current?.close();
+                } catch (error) {
+                  setMessage(
+                    error instanceof Error ? error.message : "Reset failed.",
+                  );
+                  resetRef.current?.close();
+                }
               }}
             >
               Reset workspace

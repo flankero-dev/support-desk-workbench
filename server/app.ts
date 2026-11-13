@@ -1,14 +1,16 @@
 import { createServer } from "node:http";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { readFile } from "node:fs/promises";
+import { readFile, realpath, stat } from "node:fs/promises";
 import { resolve, extname } from "node:path";
 import { parseImport } from "../src/domain/tickets.ts";
 import type { Ticket } from "../src/domain/tickets.ts";
+import { isInside } from "./pathSafety.ts";
 import { openWorkspace } from "./storage.ts";
 export function createAppServer(
   databasePath = ":memory:",
   root = resolve("dist"),
 ) {
+  root = resolve(root);
   const workspace = openWorkspace(databasePath);
   const json = (
     response: ServerResponse,
@@ -31,7 +33,13 @@ export function createAppServer(
       if (size > 2000000) throw new Error("Request is limited to 2 MB.");
       chunks.push(chunk);
     }
-    return Buffer.concat(chunks).toString("utf8");
+    try {
+      return new TextDecoder("utf-8", { fatal: true }).decode(
+        Buffer.concat(chunks),
+      );
+    } catch {
+      throw new Error("Request must contain valid UTF-8 JSON.");
+    }
   }
   const server = createServer(async (request, response) => {
     try {
@@ -129,8 +137,16 @@ export function createAppServer(
         response.writeHead(405, { Allow: "GET, HEAD" }).end();
         return;
       }
-      const path = resolve(root, `.${decodeURIComponent(pathname)}`);
-      if (path !== root && !path.startsWith(`${root}/`)) {
+      let decoded: string;
+      try {
+        decoded = decodeURIComponent(pathname);
+        if (decoded.includes("\0")) throw new Error();
+      } catch {
+        json(response, 400, { error: "Invalid URL encoding." });
+        return;
+      }
+      const path = resolve(root, `.${decoded}`);
+      if (!isInside(root, path)) {
         response.writeHead(403).end();
         return;
       }
@@ -142,7 +158,19 @@ export function createAppServer(
           ".js": "text/javascript",
           ".svg": "image/svg+xml",
         };
-        const content = await readFile(file);
+        const [realRoot, realFile] = await Promise.all([
+          realpath(root),
+          realpath(file),
+        ]);
+        if (!isInside(realRoot, realFile)) {
+          response.writeHead(403).end();
+          return;
+        }
+        if (!(await stat(realFile)).isFile()) {
+          response.writeHead(404).end();
+          return;
+        }
+        const content = await readFile(realFile);
         response.writeHead(200, {
           "Content-Type": types[extname(file)] ?? "application/octet-stream",
         });
