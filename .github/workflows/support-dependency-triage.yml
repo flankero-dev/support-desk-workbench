@@ -1,0 +1,71 @@
+name: Support Desk dependency advisory triage
+on:
+  push:
+    branches:
+      - audit/support-dependency-triage-20261113
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Inspect locked dependencies without updating them
+        run: npm ci --ignore-scripts --no-audit
+      - name: Audit complete tree and production-only tree
+        run: |
+          mkdir -p artifacts/security
+          npm audit --json > artifacts/security/full-audit.json || true
+          npm audit --omit=dev --json > artifacts/security/production-audit.json || true
+      - name: Classify advisories and validate audit results
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const read = (path) => JSON.parse(fs.readFileSync(path, 'utf8'));
+          const all = read('artifacts/security/full-audit.json');
+          const prod = read('artifacts/security/production-audit.json');
+          if (all.error || prod.error || !all.metadata?.vulnerabilities || !prod.metadata?.vulnerabilities) {
+            console.error('npm audit failed to return a valid advisory report', all.error, prod.error);
+            process.exit(1);
+          }
+          const pack = (obj) => ({
+            counts: obj.metadata.vulnerabilities,
+            advisories: Object.entries(obj.vulnerabilities ?? {}).map(([name, entry]) => ({
+              name,
+              severity: entry.severity,
+              direct: entry.isDirect,
+              range: entry.range,
+              nodes: entry.nodes?.length ?? 0,
+              via: (entry.via ?? []).map(v => typeof v === 'string'
+                ? {name: v, type: 'dependency'}
+                : {name: v.name, title: v.title, url: v.url, range: v.range, severity: v.severity}),
+              effects: entry.effects,
+              fixAvailable: entry.fixAvailable
+            }))
+          });
+          const classified = {
+            analyzedAt: new Date().toISOString(),
+            scope: 'Locked dependency tree of Support Desk PR #14; report-only, no package changes',
+            all: pack(all),
+            production: pack(prod)
+          };
+          fs.writeFileSync('artifacts/security/classified.json', JSON.stringify(classified, null, 2));
+          console.log('COMPLETE:',JSON.stringify(classified.all.counts));
+          console.log('PRODUCTION-ONLY:',JSON.stringify(classified.production.counts));
+          console.log('PRODUCTION PACKAGES:',classified.production.advisories.map(v=>v.name));
+          console.log('HIGH / CRITICAL ALL:',classified.all.advisories.filter(v=>['high','critical'].includes(v.severity)).map(v=>({name:v.name, severity:v.severity, direct:v.direct, fixAvailable:v.fixAvailable})));
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: support-desk-dependency-advisory-triage
+          path: artifacts/security/
+          if-no-files-found: warn
+          retention-days: 30
