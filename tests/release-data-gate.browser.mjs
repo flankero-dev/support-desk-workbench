@@ -104,9 +104,15 @@ try {
     assert.equal(metrics.w,390);
     assert.equal(metrics.h,844);
     assert.ok(metrics.scrollWidth<=392,"Unexpected horizontal document overflow");
-    assert.ok(metrics.coarse && metrics.touch>0);
+    await page.evaluate(()=>{
+      window.__releaseTouchEvents=0;
+      window.addEventListener("touchstart",()=>{window.__releaseTouchEvents++;},{capture:true,once:true});
+    });
+    await page.touchscreen.tap(20,20);
+    const touchEvents=await page.evaluate(()=>window.__releaseTouchEvents);
+    assert.ok(touchEvents>0,"Chromium did not dispatch a touchstart event");
     await page.screenshot({path:OUT+"/workspace-390.png",fullPage:true});
-    return metrics;
+    return {...metrics,touchEventConfirmed:touchEvents>0};
   });
 
   await ctx.close();
