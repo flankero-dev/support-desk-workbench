@@ -1,0 +1,31 @@
+name: Support Desk isolated release data gate
+on:
+  push:
+    branches:
+      - audit/support-release-data-gate-20261113
+permissions:
+  contents: read
+jobs:
+  browser-data-compat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Test v1 recovery, draft, persistence, import, mobile
+        run: node tests/release-data-gate.browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: support-desk-isolated-data-gate
+          path: artifacts/support-release-data-gate/
+          if-no-files-found: warn
+          retention-days: 30
