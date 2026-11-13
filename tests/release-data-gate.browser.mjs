@@ -40,8 +40,9 @@ try {
   const page=await ctx.newPage();
   page.on("pageerror",e=>report.errors.push(e.message));
   page.setDefaultTimeout(12000);
-  await page.addInitScript(({key,raw})=>localStorage.setItem(key,raw),{key:KEY,raw:original});
   await page.goto(url,{waitUntil:"domcontentloaded"});
+  await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key:KEY,raw:original});
+  await page.reload({waitUntil:"domcontentloaded"});
   const ticket=()=>page.getByRole("button",{name:"Checkout returns to cart after address edit",exact:true});
   await ticket().waitFor();
 
