@@ -1,0 +1,30 @@
+name: Recruiter first-click audit (read only)
+on:
+  pull_request:
+    paths:
+      - "scripts/recruiter-first-click.mjs"
+      - ".github/workflows/recruiter-first-click.yml"
+permissions:
+  contents: read
+jobs:
+  public-page-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Inspect public pages in independent clean Chromium contexts
+        run: node scripts/recruiter-first-click.mjs
+      - name: Save report and screenshots regardless of website errors
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: recruiter-first-click-public-readonly
+          path: artifacts/recruiter-audit/
+          if-no-files-found: warn
+          retention-days: 14
